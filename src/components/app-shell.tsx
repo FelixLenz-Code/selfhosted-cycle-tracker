@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { LogoutButton } from "./logout-button";
 
-type Page = "dashboard" | "calendar";
+type Page = "dashboard" | "calendar" | "partners";
 
 const links: { href: string; label: string; key: Page }[] = [
   { href: "/dashboard", label: "Übersicht", key: "dashboard" },
   { href: "/calendar", label: "Kalender", key: "calendar" },
+  { href: "/partners", label: "Partner", key: "partners" },
 ];
 
 export function AppShell({

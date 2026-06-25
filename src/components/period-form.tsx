@@ -6,7 +6,7 @@ import { addPeriod, type PeriodFormState } from "@/app/actions/periods";
 const inputClass =
   "rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-pink-500";
 
-export function PeriodForm({ today }: { today: string }) {
+export function PeriodForm({ today, ownerId }: { today: string; ownerId: string }) {
   const [state, action, pending] = useActionState<PeriodFormState, FormData>(
     addPeriod,
     undefined,
@@ -14,6 +14,7 @@ export function PeriodForm({ today }: { today: string }) {
 
   return (
     <form action={action} className="flex flex-col gap-3">
+      <input type="hidden" name="ownerId" value={ownerId} />
       <div className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium">Blutung Beginn</span>
