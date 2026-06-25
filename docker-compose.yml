@@ -1,21 +1,60 @@
+# Produktions-/Self-Host-Stack: Datenbank + App + Notification-Worker.
+# Das App-Image wird per GitHub Actions gebaut und nach GHCR gepusht;
+# `build: .` ist der Fallback (lokaler Build), wenn kein Image gezogen werden kann.
 services:
   db:
     image: postgres:16-alpine
-    container_name: zyklus_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: zyklus
-      POSTGRES_PASSWORD: zyklus_dev_pw
-      POSTGRES_DB: zyklus
-    ports:
-      - "5433:5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - zyklus_pgdata:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U zyklus -d zyklus"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  app:
+    image: ghcr.io/felixlenz-code/selfhosted-cycle-tracker:${IMAGE_TAG:-latest}
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SESSION_SECRET: ${SESSION_SECRET}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Berlin}
+      TZ: ${APP_TIMEZONE:-Europe/Berlin}
+      NODE_ENV: production
+    ports:
+      - "${APP_PORT:-3000}:3000"
+
+  worker:
+    image: ghcr.io/felixlenz-code/selfhosted-cycle-tracker:${IMAGE_TAG:-latest}
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Berlin}
+      TZ: ${APP_TIMEZONE:-Europe/Berlin}
+      NODE_ENV: production
+    # Worker startet direkt (keine Migration – die übernimmt der App-Container).
+    entrypoint: ["node"]
+    command: ["worker/index.mjs"]
 
 volumes:
-  zyklus_pgdata:
+  db_data:

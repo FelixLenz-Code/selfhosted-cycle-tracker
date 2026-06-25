@@ -21,7 +21,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
 const btn =
   "rounded-md px-4 py-2 text-sm font-medium disabled:opacity-60";
 
-export function PushManager() {
+export function PushManager({ vapidPublicKey }: { vapidPublicKey: string }) {
   const [isSupported, setIsSupported] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -47,6 +47,10 @@ export function PushManager() {
     setBusy(true);
     setInfo(null);
     try {
+      if (!vapidPublicKey) {
+        setInfo("Server hat keinen VAPID-Public-Key konfiguriert.");
+        return;
+      }
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         setInfo("Benachrichtigungen wurden im Browser nicht erlaubt.");
@@ -55,9 +59,7 @@ export function PushManager() {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-        ),
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
       });
       const serialized = JSON.parse(JSON.stringify(sub)) as SerializedSubscription;
       await subscribeUser(serialized, navigator.userAgent);

@@ -206,7 +206,23 @@ async function tick() {
   }
 }
 
-console.log("[worker] gestartet – prüfe jede Minute fällige Benachrichtigungen");
+// Warten, bis die App die Migrationen angewendet hat (Schema vorhanden),
+// damit der erste Durchlauf nicht ins Leere läuft.
+async function waitForSchema() {
+  for (let i = 0; i < 40; i++) {
+    try {
+      await sql`select 1 from scheduled_notifications limit 1`;
+      return;
+    } catch {
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+  console.warn("[worker] Schema nach Wartezeit nicht bereit – starte trotzdem.");
+}
+
+console.log("[worker] gestartet – warte auf Schema ...");
+await waitForSchema();
+console.log("[worker] Schema bereit – prüfe jede Minute fällige Benachrichtigungen");
 tick();
 cron.schedule("* * * * *", tick);
 

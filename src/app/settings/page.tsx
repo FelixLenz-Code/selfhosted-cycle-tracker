@@ -27,7 +27,7 @@ export default async function SettingsPage() {
           Aktiviere Benachrichtigungen auf diesem Gerät (für Medikamenten- und
           GV-Hinweise). Funktioniert nur über HTTPS bzw. localhost.
         </p>
-        <PushManager />
+        <PushManager vapidPublicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""} />
       </section>
     </AppShell>
   );
