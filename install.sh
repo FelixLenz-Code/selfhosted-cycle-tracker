@@ -333,11 +333,15 @@ EOF
 # ---------- Dispatch ----------
 CMD="${1:-install}"; [ $# -gt 0 ] && shift || true
 
+# Installationsverzeichnis bestimmen. Eine bestehende Installation wird – auch beim
+# Befehl "install" (One-Liner) – am Markerfile .cycle-version erkannt, sowohl im
+# aktuellen Verzeichnis als auch im Standardordner. So landet ein erneuter Aufruf
+# automatisch im Update-Pfad, statt eine zweite Instanz anzulegen.
 if [ -n "${CYCLE_DIR:-}" ]; then
   DIR="$CYCLE_DIR"
-elif [ "$CMD" != "install" ] && [ -f "./docker-compose.yml" ] && { [ -f "./.cycle-version" ] || [ -f "./.env" ]; }; then
+elif [ -f "./docker-compose.yml" ] && [ -f "./.cycle-version" ]; then
   DIR="."
-elif [ -f "./selfhosted-cycle-tracker/docker-compose.yml" ]; then
+elif [ -f "./selfhosted-cycle-tracker/docker-compose.yml" ] && [ -f "./selfhosted-cycle-tracker/.cycle-version" ]; then
   DIR="./selfhosted-cycle-tracker"
 else
   DIR="./selfhosted-cycle-tracker"
