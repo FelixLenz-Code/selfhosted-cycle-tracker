@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { LogoutButton } from "./logout-button";
 
-type Page = "dashboard" | "calendar" | "partners" | "settings";
+type Page = "dashboard" | "calendar" | "medications" | "partners" | "settings";
 
 const links: { href: string; label: string; key: Page }[] = [
   { href: "/dashboard", label: "Übersicht", key: "dashboard" },
   { href: "/calendar", label: "Kalender", key: "calendar" },
+  { href: "/medications", label: "Medikamente", key: "medications" },
   { href: "/partners", label: "Partner", key: "partners" },
   { href: "/settings", label: "Einstellungen", key: "settings" },
 ];
