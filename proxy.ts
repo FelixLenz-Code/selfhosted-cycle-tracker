@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Optimistische Auth-Weiterleitung (nur Cookie-Präsenz, keine DB-Abfrage).
 // Die eigentliche Sicherheitsprüfung passiert in der DAL/den Server Actions.
-const protectedPrefixes = ["/dashboard", "/calendar", "/partners"];
+const protectedPrefixes = ["/dashboard", "/calendar", "/partners", "/settings"];
 const authRoutes = ["/login", "/register"];
 
 export function proxy(req: NextRequest) {
