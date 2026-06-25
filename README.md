@@ -54,6 +54,28 @@ Wichtige Env-Variablen: `CYCLE_PORT`, `CYCLE_TZ`, `COOKIE_SECURE`, `VAPID_SUBJEC
 > Hinter HTTPS: in `.env` `COOKIE_SECURE=true` setzen und `./install.sh update`.
 > Ohne HTTPS bleibt es `false`, sonst funktioniert der Login nicht.
 
+### Betrieb hinter einem Reverse Proxy (empfohlen bei öffentlichem Zugriff)
+
+Die App ist für den Betrieb hinter einem Reverse Proxy (Caddy, nginx, Traefik)
+ausgelegt. Wichtig:
+
+- Den App-Port **nicht** direkt öffentlich exposen, sondern nur den Proxy. So kann
+  die Client-IP nicht gefälscht werden.
+- Der Proxy muss den Header **`X-Forwarded-For`** mit der echten Client-IP setzen –
+  darauf basiert das eingebaute **Login-/Registrierungs-Rate-Limit**
+  (10 Versuche pro 15 Min je IP und je E-Mail).
+- Mit TLS am Proxy zusätzlich `COOKIE_SECURE=true` setzen.
+
+Beispiel (Caddy):
+
+```
+zyklus.example.com {
+    reverse_proxy 127.0.0.1:3000
+}
+```
+
+Caddy setzt `X-Forwarded-For`/`X-Forwarded-Proto` automatisch.
+
 ### Manuell mit Docker Compose
 
 ```bash

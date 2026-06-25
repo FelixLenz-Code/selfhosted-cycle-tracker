@@ -46,6 +46,15 @@ export const users = pgTable("users", {
     .notNull(),
 });
 
+// --- Rate-Limiting (Login/Registrierung), Fixed-Window-Zähler je Schlüssel ---
+export const rateLimitHits = pgTable("rate_limit_hits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull().default(0),
+  windowStart: timestamp("window_start", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 // --- Sessions (eigene, cookie-basierte Auth) ---
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(), // gehashter Session-Token

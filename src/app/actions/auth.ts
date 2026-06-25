@@ -7,6 +7,15 @@ import { db } from "@/db";
 import { users, cycleSettings } from "@/db/schema";
 import { createSession, deleteSession } from "@/lib/session";
 import { signupSchema, loginSchema } from "@/lib/validation";
+import {
+  getClientIp,
+  isRateLimited,
+  registerFailedAttempt,
+  resetAttempts,
+} from "@/lib/rate-limit";
+
+const TOO_MANY =
+  "Zu viele Versuche. Bitte in einigen Minuten erneut versuchen.";
 
 export type AuthState =
   | {
@@ -35,6 +44,12 @@ export async function signup(
 
   const { displayName, email, password, tracksCycle } = parsed.data;
 
+  // Registrierung pro IP begrenzen (Schutz vor Massen-Anlage)
+  const ipKey = [`signup:ip:${await getClientIp()}`];
+  if (await isRateLimited(ipKey)) {
+    return { error: TOO_MANY };
+  }
+
   const existing = await db
     .select({ id: users.id })
     .from(users)
@@ -44,6 +59,8 @@ export async function signup(
   if (existing[0]) {
     return { error: "Diese E-Mail ist bereits registriert." };
   }
+
+  await registerFailedAttempt(ipKey);
 
   const passwordHash = await bcrypt.hash(password, 12);
 
@@ -76,6 +93,15 @@ export async function login(
     return { error: "Ungültige Eingabe." };
   }
 
+  // Limit pro IP und pro E-Mail (fängt auch IP-Rotation gegen ein Konto ab)
+  const keys = [
+    `login:ip:${await getClientIp()}`,
+    `login:email:${parsed.data.email}`,
+  ];
+  if (await isRateLimited(keys)) {
+    return { error: TOO_MANY };
+  }
+
   const rows = await db
     .select()
     .from(users)
@@ -88,9 +114,11 @@ export async function login(
   const ok = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? DUMMY_HASH);
 
   if (!user || !ok) {
+    await registerFailedAttempt(keys);
     return { error: "E-Mail oder Passwort ist falsch." };
   }
 
+  await resetAttempts(keys);
   await createSession(user.id);
   redirect("/dashboard");
 }

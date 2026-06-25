@@ -203,11 +203,17 @@ async function processGvWindows() {
   }
 }
 
+async function pruneRateLimits() {
+  // Abgelaufene Rate-Limit-Zähler entfernen (Fenster = 15 Min).
+  await sql`delete from rate_limit_hits where window_start < now() - interval '1 hour'`;
+}
+
 async function tick() {
   try {
     await processScheduled();
     await processMedications();
     await processGvWindows();
+    await pruneRateLimits();
   } catch (err) {
     console.error("[worker] tick error", err);
   }
