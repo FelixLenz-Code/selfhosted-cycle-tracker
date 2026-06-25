@@ -1,9 +1,9 @@
-# Cadora
+# Selfhosted Cycle Tracker
 
 Eine self-hostbare Webapp (PWA) zum Tracken des weiblichen Zyklus – mit Paar-Funktion,
 Medikamenten-Erinnerungen und Push-Benachrichtigungen.
 
-> ⚠️ **Hinweis:** Cadora ist **kein sicheres Verhütungsmittel**. Kalender-/
+> ⚠️ **Hinweis:** Dies ist **kein sicheres Verhütungsmittel**. Kalender-/
 > berechnungsbasierte Zyklusvorhersagen sind unzuverlässig. Im „Vermeidung"-Modus
 > dient die App ausschließlich der Information.
 
@@ -47,6 +47,20 @@ npm run dev                 # http://localhost:3000
 | `npm run db:push` | Schema direkt in DB pushen (Dev) |
 | `npm run db:studio` | Drizzle Studio |
 
+## Hinweis zur KI-Unterstützung
+
+Diese Software wurde vollständig mithilfe von Claude (einem KI-Assistenten von Anthropic) entwickelt. Der Autor hat die Anforderungen definiert, Entscheidungen getroffen und das Ergebnis geprüft — der Code selbst wurde durch den Dialog mit der KI generiert.
+
+## Haftungsausschluss
+
+Die Software wird so bereitgestellt, wie sie ist (as-is), ohne jegliche Garantie auf Korrektheit, Vollständigkeit oder Eignung für einen bestimmten Zweck. Der Autor übernimmt keinerlei Haftung für Schäden, Datenverluste oder sonstige Probleme, die durch die Verwendung dieser Software entstehen. Die Nutzung erfolgt auf eigene Verantwortung.
+
 ## Lizenz
 
-Noch nicht festgelegt.
+© 2026 Felix Lenz.
+
+Dieses Projekt steht unter der **Creative Commons Attribution-NonCommercial 4.0
+International (CC BY-NC 4.0)** Lizenz. Du darfst es teilen und bearbeiten, solange du
+den Urheber nennst und es **nicht kommerziell** nutzt. Den vollständigen Text findest du
+in [`LICENSE`](./LICENSE) sowie unter
+<https://creativecommons.org/licenses/by-nc/4.0/>.
