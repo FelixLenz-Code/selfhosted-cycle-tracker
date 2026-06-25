@@ -8,6 +8,13 @@
       "when": 1782397835509,
       "tag": "0000_hot_vertigo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782400967690,
+      "tag": "0001_great_magdalene",
+      "breakpoints": true
     }
   ]
 }

@@ -105,6 +105,8 @@ export const cycleSettings = pgTable("cycle_settings", {
   windowEndOffset: integer("window_end_offset").notNull().default(1),
   notifyTime: time("notify_time").notNull().default("09:00"),
   notifyAudience: notifyAudience("notify_audience").notNull().default("owner"),
+  // Dedup für GV-Fenster-Push: Fensterstart-Datum, für das zuletzt benachrichtigt wurde
+  lastGvNotified: date("last_gv_notified"),
 });
 
 // --- Medikamente ---

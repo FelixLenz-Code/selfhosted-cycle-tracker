@@ -5,6 +5,7 @@ import { getPeriodEntries, getCycleSettings } from "@/lib/queries";
 import { computeCycleStats, todayISO } from "@/lib/cycle";
 import { AppShell } from "@/components/app-shell";
 import { CycleOverview } from "@/components/cycle-overview";
+import { GvWindow } from "@/components/gv-window";
 import { PeriodForm } from "@/components/period-form";
 import { PeriodList } from "@/components/period-list";
 import { OwnerSwitcher } from "@/components/owner-switcher";
@@ -53,6 +54,12 @@ export default async function DashboardPage({
       <section className="mt-6">
         <CycleOverview stats={stats} />
       </section>
+
+      {stats.gvWindow && (
+        <section className="mt-4">
+          <GvWindow stats={stats} />
+        </section>
+      )}
 
       {access.canEdit && (
         <section className="mt-8 rounded-xl border border-black/10 dark:border-white/15 p-5">

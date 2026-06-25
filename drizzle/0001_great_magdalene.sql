@@ -1,0 +1,1 @@
+ALTER TABLE "cycle_settings" ADD COLUMN "last_gv_notified" date;

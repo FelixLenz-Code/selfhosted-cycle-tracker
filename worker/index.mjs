@@ -22,6 +22,8 @@ const sql = postgres(DATABASE_URL);
 
 const pad = (n) => String(n).padStart(2, "0");
 const DAY_MS = 864e5;
+const addDays = (iso, n) =>
+  new Date(Date.parse(`${iso}T00:00:00Z`) + n * DAY_MS).toISOString().slice(0, 10);
 
 async function sendToUser(userId, payload) {
   const subs = await sql`
@@ -121,10 +123,84 @@ async function processMedications() {
   }
 }
 
+// --- GV-Fenster-Hinweise ---
+async function cycleInfo(ownerId, override) {
+  const rows = await sql`
+    select start_date::text as start_date from period_entries
+    where owner_id = ${ownerId} order by start_date desc limit 7`;
+  if (rows.length === 0) return null;
+  const starts = rows.map((r) => r.start_date); // absteigend
+  const diffs = [];
+  for (let i = 0; i < starts.length - 1; i++) {
+    const d = Math.round(
+      (Date.parse(`${starts[i]}T00:00:00Z`) - Date.parse(`${starts[i + 1]}T00:00:00Z`)) / DAY_MS,
+    );
+    if (d > 0) diffs.push(d);
+  }
+  let avg;
+  if (override && override > 0) avg = override;
+  else if (diffs.length) avg = Math.round(diffs.reduce((a, b) => a + b, 0) / diffs.length);
+  else avg = 28;
+  return { lastStart: starts[0], avg };
+}
+
+async function processGvWindows() {
+  const now = new Date();
+  const hhmm = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+
+  const rows = await sql`
+    select owner_id, luteal_phase_days, mode, window_start_offset, window_end_offset,
+           notify_time, notify_audience, avg_cycle_length_override,
+           last_gv_notified::text as last_gv_notified
+    from cycle_settings`;
+
+  for (const s of rows) {
+    if ((s.notify_time || "").slice(0, 5) !== hhmm) continue;
+    const info = await cycleInfo(s.owner_id, s.avg_cycle_length_override);
+    if (!info) continue;
+
+    const nextPeriod = addDays(info.lastStart, info.avg);
+    const ovulation = addDays(nextPeriod, -s.luteal_phase_days);
+    const windowStart = addDays(ovulation, s.window_start_offset);
+
+    if (windowStart !== todayStr) continue; // nur am Fenster-Start
+    if (s.last_gv_notified === windowStart) continue; // Dedup
+
+    const isTtc = s.mode === "ttc";
+    const payload = {
+      title: isTtc ? "Fruchtbares Fenster beginnt" : "Vermeidungs-Fenster beginnt",
+      body: isTtc
+        ? "Jetzt beginnt die günstige (fruchtbare) Zeit."
+        : "Jetzt beginnt die vermeintlich unfruchtbare Phase – kein sicheres Verhütungsmittel.",
+      url: "/dashboard",
+      tag: `gv-${s.owner_id}-${windowStart}`,
+    };
+
+    const targets = new Set();
+    if (s.notify_audience === "owner" || s.notify_audience === "both") targets.add(s.owner_id);
+    if (s.notify_audience === "partner" || s.notify_audience === "both") {
+      const partners = await sql`
+        select partner_id from partner_links
+        where owner_id = ${s.owner_id} and status = 'accepted' and partner_id is not null`;
+      for (const p of partners) targets.add(p.partner_id);
+    }
+
+    let total = 0;
+    for (const t of targets) {
+      const { sent } = await sendToUser(t, payload);
+      total += sent;
+    }
+    await sql`update cycle_settings set last_gv_notified = ${windowStart} where owner_id = ${s.owner_id}`;
+    console.log(`[worker] gv-window ${s.owner_id} (${s.mode}) -> ${total} Gerät(e)`);
+  }
+}
+
 async function tick() {
   try {
     await processScheduled();
     await processMedications();
+    await processGvWindows();
   } catch (err) {
     console.error("[worker] tick error", err);
   }

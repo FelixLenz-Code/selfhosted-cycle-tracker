@@ -8,9 +8,14 @@ export type PeriodEntryLite = {
   endDate: string | null;
 };
 
+export type CycleMode = "ttc" | "avoid";
+
 export type CycleSettingsLite = {
   avgCycleLengthOverride: number | null;
   lutealPhaseDays: number;
+  mode: CycleMode;
+  windowStartOffset: number;
+  windowEndOffset: number;
 };
 
 export type CycleStats = {
@@ -25,6 +30,9 @@ export type CycleStats = {
   daysUntilNextPeriod: number | null;
   estimatedOvulation: string | null;
   fertileWindow: { start: string; end: string } | null;
+  // Konfiguriertes GV-Fenster (relativ zum Eisprung, modusabhängige Offsets)
+  mode: CycleMode;
+  gvWindow: { start: string; end: string } | null;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -108,6 +116,7 @@ export function computeCycleStats(
   let daysUntilNextPeriod: number | null = null;
   let estimatedOvulation: string | null = null;
   let fertileWindow: { start: string; end: string } | null = null;
+  let gvWindow: { start: string; end: string } | null = null;
 
   if (lastPeriodStart) {
     predictedNextPeriod = addDays(lastPeriodStart, avgCycleLength);
@@ -116,6 +125,10 @@ export function computeCycleStats(
     fertileWindow = {
       start: addDays(estimatedOvulation, -5),
       end: addDays(estimatedOvulation, 1),
+    };
+    gvWindow = {
+      start: addDays(estimatedOvulation, settings.windowStartOffset),
+      end: addDays(estimatedOvulation, settings.windowEndOffset),
     };
   }
 
@@ -131,6 +144,8 @@ export function computeCycleStats(
     daysUntilNextPeriod,
     estimatedOvulation,
     fertileWindow,
+    mode: settings.mode,
+    gvWindow,
   };
 }
 
