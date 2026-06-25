@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { users, partnerLinks } from "@/db/schema";
 import { requireUser } from "@/lib/dal";
+import { isUuid } from "@/lib/ids";
 
 export type InviteState = { error?: string; success?: string } | undefined;
 
@@ -93,7 +94,7 @@ async function findOwnInvite(linkId: string, userId: string, userEmail: string) 
 export async function acceptInvite(formData: FormData): Promise<void> {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
-  if (!id) return;
+  if (!isUuid(id)) return;
 
   const invite = await findOwnInvite(id, user.id, user.email);
   if (!invite || invite.status !== "pending") return;
@@ -110,7 +111,7 @@ export async function acceptInvite(formData: FormData): Promise<void> {
 export async function declineInvite(formData: FormData): Promise<void> {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
-  if (!id) return;
+  if (!isUuid(id)) return;
 
   const invite = await findOwnInvite(id, user.id, user.email);
   if (!invite || invite.status !== "pending") return;
@@ -123,11 +124,68 @@ export async function declineInvite(formData: FormData): Promise<void> {
 export async function revokeLink(formData: FormData): Promise<void> {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
-  if (!id) return;
+  if (!isUuid(id)) return;
 
   await db
     .delete(partnerLinks)
     .where(and(eq(partnerLinks.id, id), eq(partnerLinks.ownerId, user.id)));
+
+  revalidatePath("/partners");
+  revalidatePath("/dashboard");
+}
+
+// Gegenseitig freigeben: Wenn jemand mir bereits Zugriff gegeben hat, gebe ich
+// dieser Person Zugriff auf MEINE Daten (als Eigentümerin meiner Daten ist das
+// meine Entscheidung -> direkt aktiv, nur Ansicht; Bearbeiten kann ich danach erlauben).
+export async function reciprocateLink(formData: FormData): Promise<void> {
+  const user = await requireUser();
+  const targetId = String(formData.get("ownerId") ?? "");
+  if (!isUuid(targetId) || targetId === user.id) return;
+
+  // Beleg, dass die Zielperson mir bereits Zugriff gegeben hat (akzeptiert).
+  const theyShareWithMe = await db
+    .select({ id: partnerLinks.id })
+    .from(partnerLinks)
+    .where(
+      and(
+        eq(partnerLinks.ownerId, targetId),
+        eq(partnerLinks.partnerId, user.id),
+        eq(partnerLinks.status, "accepted"),
+      ),
+    )
+    .limit(1);
+  if (!theyShareWithMe[0]) return;
+
+  // Schon eine (nicht widerrufene) Freigabe an diese Person?
+  const existing = await db
+    .select({ id: partnerLinks.id })
+    .from(partnerLinks)
+    .where(
+      and(
+        eq(partnerLinks.ownerId, user.id),
+        eq(partnerLinks.partnerId, targetId),
+        ne(partnerLinks.status, "revoked"),
+      ),
+    )
+    .limit(1);
+  if (existing[0]) return;
+
+  const targetRows = await db
+    .select({ email: users.email })
+    .from(users)
+    .where(eq(users.id, targetId))
+    .limit(1);
+  if (!targetRows[0]) return;
+
+  await db.insert(partnerLinks).values({
+    ownerId: user.id,
+    partnerId: targetId,
+    invitedEmail: targetRows[0].email,
+    status: "accepted",
+    canView: true,
+    canEdit: false,
+    acceptedAt: new Date(),
+  });
 
   revalidatePath("/partners");
   revalidatePath("/dashboard");
@@ -138,7 +196,7 @@ export async function setEditPermission(formData: FormData): Promise<void> {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
   const canEdit = String(formData.get("canEdit") ?? "") === "true";
-  if (!id) return;
+  if (!isUuid(id)) return;
 
   await db
     .update(partnerLinks)

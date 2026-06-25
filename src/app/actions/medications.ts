@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { medications } from "@/db/schema";
 import { requireUser } from "@/lib/dal";
+import { isUuid } from "@/lib/ids";
 
 export type MedFormState = { error?: string } | undefined;
 
@@ -88,7 +89,7 @@ export async function updateMedication(
 ): Promise<MedFormState> {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
-  if (!id) return { error: "Fehlende ID." };
+  if (!isUuid(id)) return { error: "Ungültige ID." };
   const parsed = parseForm(formData);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
@@ -113,7 +114,7 @@ export async function updateMedication(
 export async function deleteMedication(formData: FormData): Promise<void> {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
-  if (!id) return;
+  if (!isUuid(id)) return;
   await db
     .delete(medications)
     .where(and(eq(medications.id, id), eq(medications.ownerId, user.id)));
@@ -124,7 +125,7 @@ export async function toggleMedication(formData: FormData): Promise<void> {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
   const active = String(formData.get("active") ?? "") === "true";
-  if (!id) return;
+  if (!isUuid(id)) return;
   await db
     .update(medications)
     .set({ active })

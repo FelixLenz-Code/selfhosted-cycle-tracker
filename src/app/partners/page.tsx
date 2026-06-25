@@ -1,11 +1,12 @@
 import { requireUser } from "@/lib/dal";
-import { getIncomingInvites, getOutgoingLinks } from "@/lib/access";
+import { getIncomingInvites, getOutgoingLinks, getLinkedOwners } from "@/lib/access";
 import { AppShell } from "@/components/app-shell";
 import { InviteForm } from "@/components/invite-form";
 import {
   acceptInvite,
   declineInvite,
   revokeLink,
+  reciprocateLink,
   setEditPermission,
 } from "@/app/actions/partners";
 
@@ -17,10 +18,15 @@ const statusLabel: Record<string, string> = {
 
 export default async function PartnersPage() {
   const user = await requireUser();
-  const [incoming, outgoing] = await Promise.all([
+  const [incoming, outgoing, linkedOwners] = await Promise.all([
     getIncomingInvites(user.id, user.email.toLowerCase()),
     getOutgoingLinks(user.id),
+    getLinkedOwners(user.id),
   ]);
+  // Personen, denen ich (als Owner) bereits Zugriff gegeben habe.
+  const sharedWith = new Set(
+    outgoing.filter((o) => o.status !== "revoked" && o.partnerId).map((o) => o.partnerId),
+  );
 
   return (
     <AppShell active="partners" userName={user.displayName}>
@@ -63,6 +69,36 @@ export default async function PartnersPage() {
                     </button>
                   </form>
                 </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {linkedOwners.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-lg font-medium">Du hast Zugriff auf</h2>
+          <ul className="mt-2 flex flex-col divide-y divide-black/10 dark:divide-white/10">
+            {linkedOwners.map((o) => (
+              <li key={o.ownerId} className="flex items-center justify-between gap-3 py-3">
+                <div className="text-sm">
+                  <div className="font-medium">{o.ownerName}</div>
+                  <div className="text-xs text-black/50 dark:text-white/50">
+                    {o.canEdit ? "ansehen + bearbeiten" : "nur ansehen"}
+                    {sharedWith.has(o.ownerId) ? " · gegenseitig" : ""}
+                  </div>
+                </div>
+                {!sharedWith.has(o.ownerId) && (
+                  <form action={reciprocateLink}>
+                    <input type="hidden" name="ownerId" value={o.ownerId} />
+                    <button
+                      type="submit"
+                      className="rounded-md border border-black/15 dark:border-white/20 px-2.5 py-1 text-xs hover:bg-black/5 dark:hover:bg-white/10"
+                    >
+                      Auch meine Daten freigeben
+                    </button>
+                  </form>
+                )}
               </li>
             ))}
           </ul>

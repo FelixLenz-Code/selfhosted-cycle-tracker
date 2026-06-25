@@ -3,6 +3,7 @@ import { and, eq, or } from "drizzle-orm";
 import { db } from "@/db";
 import { users, partnerLinks } from "@/db/schema";
 import type { CurrentUser } from "./dal";
+import { isUuid } from "./ids";
 
 export type OwnerAccess = {
   ownerId: string;
@@ -27,6 +28,8 @@ export async function resolveOwnerAccess(
       canEdit: true,
     };
   }
+
+  if (!isUuid(ownerIdParam)) return null;
 
   const rows = await db
     .select({
@@ -60,6 +63,7 @@ export async function resolveOwnerAccess(
 // Prüft, ob der User für einen Owner Schreibrechte hat (für Server Actions).
 export async function canEditOwner(userId: string, ownerId: string): Promise<boolean> {
   if (userId === ownerId) return true;
+  if (!isUuid(ownerId)) return false;
   const rows = await db
     .select({ canEdit: partnerLinks.canEdit })
     .from(partnerLinks)
@@ -97,6 +101,7 @@ export type OutgoingLink = {
   canView: boolean;
   canEdit: boolean;
   invitedEmail: string | null;
+  partnerId: string | null;
   partnerName: string | null;
 };
 
@@ -109,6 +114,7 @@ export async function getOutgoingLinks(ownerId: string): Promise<OutgoingLink[]>
       canView: partnerLinks.canView,
       canEdit: partnerLinks.canEdit,
       invitedEmail: partnerLinks.invitedEmail,
+      partnerId: partnerLinks.partnerId,
       partnerName: users.displayName,
     })
     .from(partnerLinks)

@@ -15,6 +15,9 @@ export type AuthState =
     }
   | undefined;
 
+// Gültiger Bcrypt-Hash für den Dummy-Vergleich bei unbekannter E-Mail.
+const DUMMY_HASH = bcrypt.hashSync("dummy-password-placeholder", 12);
+
 export async function signup(
   _prev: AuthState,
   formData: FormData,
@@ -80,9 +83,9 @@ export async function login(
     .limit(1);
 
   const user = rows[0];
-  const ok = user
-    ? await bcrypt.compare(parsed.data.password, user.passwordHash)
-    : false;
+  // Auch bei unbekannter E-Mail einen bcrypt-Vergleich ausführen, damit die
+  // Antwortzeit keine Rückschlüsse erlaubt (User-Enumeration verhindern).
+  const ok = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? DUMMY_HASH);
 
   if (!user || !ok) {
     return { error: "E-Mail oder Passwort ist falsch." };

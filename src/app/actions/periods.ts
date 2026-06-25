@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { periodEntries } from "@/db/schema";
 import { requireUser } from "@/lib/dal";
 import { canEditOwner } from "@/lib/access";
+import { isUuid } from "@/lib/ids";
 import { todayISO, diffDays } from "@/lib/cycle";
 
 export type PeriodFormState = { error?: string } | undefined;
@@ -80,7 +81,7 @@ export async function endPeriod(formData: FormData): Promise<void> {
   const ownerId = ownerIdFrom(formData, user.id);
   const id = String(formData.get("id") ?? "");
   const endDate = String(formData.get("endDate") ?? "") || todayISO();
-  if (!id || !(await canEditOwner(user.id, ownerId))) return;
+  if (!isUuid(id) || !(await canEditOwner(user.id, ownerId))) return;
 
   await db
     .update(periodEntries)
@@ -94,7 +95,7 @@ export async function deletePeriod(formData: FormData): Promise<void> {
   const user = await requireUser();
   const ownerId = ownerIdFrom(formData, user.id);
   const id = String(formData.get("id") ?? "");
-  if (!id || !(await canEditOwner(user.id, ownerId))) return;
+  if (!isUuid(id) || !(await canEditOwner(user.id, ownerId))) return;
 
   await db
     .delete(periodEntries)
