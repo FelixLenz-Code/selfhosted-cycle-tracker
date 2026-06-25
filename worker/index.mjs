@@ -150,7 +150,7 @@ async function processGvWindows() {
   const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 
   const rows = await sql`
-    select owner_id, luteal_phase_days, mode, window_start_offset, window_end_offset,
+    select owner_id, mode, window_start_day, window_end_day,
            notify_time, notify_audience, avg_cycle_length_override,
            last_gv_notified::text as last_gv_notified
     from cycle_settings`;
@@ -160,19 +160,18 @@ async function processGvWindows() {
     const info = await cycleInfo(s.owner_id, s.avg_cycle_length_override);
     if (!info) continue;
 
-    const nextPeriod = addDays(info.lastStart, info.avg);
-    const ovulation = addDays(nextPeriod, -s.luteal_phase_days);
-    const windowStart = addDays(ovulation, s.window_start_offset);
+    // Zyklustag 1 = lastStart; Fensterbeginn = lastStart + (Tag - 1)
+    const windowStart = addDays(info.lastStart, s.window_start_day - 1);
 
     if (windowStart !== todayStr) continue; // nur am Fenster-Start
     if (s.last_gv_notified === windowStart) continue; // Dedup
 
     const isTtc = s.mode === "ttc";
     const payload = {
-      title: isTtc ? "Fruchtbares Fenster beginnt" : "Vermeidungs-Fenster beginnt",
+      title: isTtc ? "Fruchtbares Fenster beginnt" : "Spaß-Zeit beginnt 😊",
       body: isTtc
         ? "Jetzt beginnt die günstige (fruchtbare) Zeit."
-        : "Jetzt beginnt die vermeintlich unfruchtbare Phase – kein sicheres Verhütungsmittel.",
+        : "Jetzt beginnt deine Spaß-Zeit.",
       url: "/dashboard",
       tag: `gv-${s.owner_id}-${windowStart}`,
     };

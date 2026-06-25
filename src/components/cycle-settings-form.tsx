@@ -8,7 +8,7 @@ import {
 import type { CycleSettingsForm as Settings } from "@/lib/queries";
 
 const inputClass =
-  "rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-pink-500";
+  "rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-violet-500";
 
 export function CycleSettingsForm({ settings }: { settings: Settings }) {
   const [state, action, pending] = useActionState<CycleSettingsState, FormData>(
@@ -16,6 +16,7 @@ export function CycleSettingsForm({ settings }: { settings: Settings }) {
     undefined,
   );
   const [mode, setMode] = useState(settings.mode);
+  const [untilBleeding, setUntilBleeding] = useState(settings.windowEndDay === null);
 
   return (
     <form action={action} className="flex flex-col gap-4">
@@ -39,49 +40,59 @@ export function CycleSettingsForm({ settings }: { settings: Settings }) {
             checked={mode === "avoid"}
             onChange={() => setMode("avoid")}
           />
-          Vermeidung – Hinweis zur vermeintlich unfruchtbaren Zeit
+          Spaß-Zeit – Hinweis zur entspannten Zeit (geringere Wahrscheinlichkeit)
         </label>
       </fieldset>
 
+      <div className="rounded-md bg-black/5 dark:bg-white/10 p-3 text-xs text-black/60 dark:text-white/60">
+        Zyklustag&nbsp;1 = erster Tag der Blutung. Beispiele: Kinderwunsch etwa
+        Tag&nbsp;12–15; Spaß-Zeit z.&nbsp;B. ab Tag&nbsp;28 bis zur nächsten Blutung.
+      </div>
+
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium">Fenster von Zyklustag</span>
+          <input
+            type="number"
+            name="windowStartDay"
+            defaultValue={settings.windowStartDay}
+            min={1}
+            max={60}
+            className={`${inputClass} w-28`}
+          />
+        </label>
+        {!untilBleeding && (
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium">bis Zyklustag</span>
+            <input
+              type="number"
+              name="windowEndDay"
+              defaultValue={settings.windowEndDay ?? 15}
+              min={1}
+              max={60}
+              className={`${inputClass} w-28`}
+            />
+          </label>
+        )}
+      </div>
+
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          name="untilBleeding"
+          checked={untilBleeding}
+          onChange={(e) => setUntilBleeding(e.target.checked)}
+          className="h-4 w-4"
+        />
+        bis zur nächsten Blutung
+      </label>
+
       {mode === "avoid" && (
         <div className="rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
-          <strong>Wichtig:</strong> Dies ist <strong>kein sicheres Verhütungsmittel</strong>.
-          Der Eisprung schwankt; eine kalender-/berechnungsbasierte Methode kann eine
-          Schwangerschaft nicht zuverlässig verhindern. Nutze die Hinweise nur als
-          Orientierung.
+          Hinweis: Das ist <strong>keine sichere Verhütung</strong> – der Eisprung
+          schwankt. Nur als Orientierung verstehen.
         </div>
       )}
-
-      <div className="flex flex-wrap gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Fenster-Start</span>
-          <input
-            type="number"
-            name="windowStartOffset"
-            defaultValue={settings.windowStartOffset}
-            min={-20}
-            max={20}
-            className={`${inputClass} w-28`}
-          />
-          <span className="text-xs text-black/50 dark:text-white/50">
-            Tage zum Eisprung (negativ = davor)
-          </span>
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Fenster-Ende</span>
-          <input
-            type="number"
-            name="windowEndOffset"
-            defaultValue={settings.windowEndOffset}
-            min={-20}
-            max={20}
-            className={`${inputClass} w-28`}
-          />
-          <span className="text-xs text-black/50 dark:text-white/50">
-            Tage zum Eisprung (positiv = danach)
-          </span>
-        </label>
-      </div>
 
       <div className="flex flex-wrap gap-3">
         <label className="flex flex-col gap-1 text-sm">
@@ -146,7 +157,7 @@ export function CycleSettingsForm({ settings }: { settings: Settings }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 disabled:opacity-60"
+          className="rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60"
         >
           {pending ? "Speichern …" : "Einstellungen speichern"}
         </button>

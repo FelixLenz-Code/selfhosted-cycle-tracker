@@ -3,8 +3,8 @@ import { classifyDay, todayISO, type DayKind, type CycleStats, type PeriodEntryL
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
 const KIND_CLASS: Record<Exclude<DayKind, "none">, string> = {
-  period: "bg-pink-600 text-white",
-  "predicted-period": "border border-dashed border-pink-500 text-pink-700 dark:text-pink-300",
+  period: "bg-rose-600 text-white",
+  "predicted-period": "border border-dashed border-rose-500 text-rose-700 dark:text-rose-300",
   fertile: "bg-green-500/20 text-green-800 dark:text-green-200",
   ovulation: "bg-green-600 text-white",
 };
@@ -63,8 +63,8 @@ export function CycleCalendar({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-black/60 dark:text-white/60">
-        <Legend className="bg-pink-600" label="Blutung" />
-        <Legend className="border border-dashed border-pink-500" label="Vorhergesagte Periode" />
+        <Legend className="bg-rose-600" label="Blutung" />
+        <Legend className="border border-dashed border-rose-500" label="Vorhergesagte Periode" />
         <Legend className="bg-green-500/40" label="Fruchtbares Fenster" />
         <Legend className="bg-green-600" label="Eisprung (Schätzung)" />
       </div>

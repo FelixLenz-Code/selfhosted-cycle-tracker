@@ -12,8 +12,8 @@ const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 const schema = z.object({
   mode: z.enum(["ttc", "avoid"]),
-  windowStartOffset: z.number().int().min(-20).max(20),
-  windowEndOffset: z.number().int().min(-20).max(20),
+  windowStartDay: z.number().int().min(1).max(60),
+  windowEndDay: z.number().int().min(1).max(60).nullable(),
   notifyTime: z.string().regex(timeRe, { error: "Uhrzeit muss HH:MM sein." }),
   notifyAudience: z.enum(["owner", "partner", "both"]),
   lutealPhaseDays: z.number().int().min(8).max(20),
@@ -28,11 +28,14 @@ export async function saveCycleSettings(
 
   const num = (v: FormDataEntryValue | null) => Number(String(v ?? "").trim());
   const overrideRaw = String(formData.get("avgCycleLengthOverride") ?? "").trim();
+  // "bis zur nächsten Blutung" -> Ende offen (null)
+  const untilBleeding = formData.get("untilBleeding") === "on" || formData.get("untilBleeding") === "true";
+  const endRaw = String(formData.get("windowEndDay") ?? "").trim();
 
   const parsed = schema.safeParse({
     mode: formData.get("mode"),
-    windowStartOffset: num(formData.get("windowStartOffset")),
-    windowEndOffset: num(formData.get("windowEndOffset")),
+    windowStartDay: num(formData.get("windowStartDay")),
+    windowEndDay: untilBleeding || endRaw === "" ? null : Number(endRaw),
     notifyTime: formData.get("notifyTime"),
     notifyAudience: formData.get("notifyAudience"),
     lutealPhaseDays: num(formData.get("lutealPhaseDays")),
@@ -43,7 +46,7 @@ export async function saveCycleSettings(
     return { error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
   }
 
-  if (parsed.data.windowStartOffset > parsed.data.windowEndOffset) {
+  if (parsed.data.windowEndDay !== null && parsed.data.windowStartDay > parsed.data.windowEndDay) {
     return { error: "Fenster-Start darf nicht nach dem Fenster-Ende liegen." };
   }
 

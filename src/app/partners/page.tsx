@@ -48,7 +48,7 @@ export default async function PartnersPage() {
                     <input type="hidden" name="id" value={inv.id} />
                     <button
                       type="submit"
-                      className="rounded-md bg-pink-600 px-3 py-1 text-sm text-white hover:bg-pink-700"
+                      className="rounded-md bg-violet-600 px-3 py-1 text-sm text-white hover:bg-violet-700"
                     >
                       Annehmen
                     </button>

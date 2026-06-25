@@ -14,8 +14,9 @@ export type CycleSettingsLite = {
   avgCycleLengthOverride: number | null;
   lutealPhaseDays: number;
   mode: CycleMode;
-  windowStartOffset: number;
-  windowEndOffset: number;
+  // Fenster als Zyklustage ab Blutungstag 1. windowEndDay = null -> bis zur nächsten Blutung.
+  windowStartDay: number;
+  windowEndDay: number | null;
 };
 
 export type CycleStats = {
@@ -126,9 +127,14 @@ export function computeCycleStats(
       start: addDays(estimatedOvulation, -5),
       end: addDays(estimatedOvulation, 1),
     };
+    // Fenster relativ zum Blutungsbeginn (Zyklustag 1 = lastPeriodStart).
+    // Ende offen -> bis zum Tag vor der nächsten Blutung.
     gvWindow = {
-      start: addDays(estimatedOvulation, settings.windowStartOffset),
-      end: addDays(estimatedOvulation, settings.windowEndOffset),
+      start: addDays(lastPeriodStart, settings.windowStartDay - 1),
+      end:
+        settings.windowEndDay !== null
+          ? addDays(lastPeriodStart, settings.windowEndDay - 1)
+          : addDays(predictedNextPeriod, -1),
     };
   }
 

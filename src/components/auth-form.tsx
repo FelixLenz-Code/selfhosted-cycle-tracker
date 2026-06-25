@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { signup, login, type AuthState } from "@/app/actions/auth";
 
 const inputClass =
-  "w-full rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-pink-500";
+  "w-full rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-violet-500";
 
 export function RegisterForm() {
   const [state, action, pending] = useActionState<AuthState, FormData>(
@@ -50,14 +50,14 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 disabled:opacity-60"
+        className="mt-2 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60"
       >
         {pending ? "Wird erstellt …" : "Konto erstellen"}
       </button>
 
       <p className="text-center text-sm text-black/60 dark:text-white/60">
         Schon ein Konto?{" "}
-        <Link href="/login" className="text-pink-600 hover:underline">
+        <Link href="/login" className="text-violet-600 hover:underline">
           Anmelden
         </Link>
       </p>
@@ -92,14 +92,14 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 disabled:opacity-60"
+        className="mt-2 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60"
       >
         {pending ? "Anmelden …" : "Anmelden"}
       </button>
 
       <p className="text-center text-sm text-black/60 dark:text-white/60">
         Noch kein Konto?{" "}
-        <Link href="/register" className="text-pink-600 hover:underline">
+        <Link href="/register" className="text-violet-600 hover:underline">
           Registrieren
         </Link>
       </p>

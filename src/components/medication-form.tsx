@@ -9,7 +9,7 @@ import {
 import type { Medication } from "@/lib/medications-queries";
 
 const inputClass =
-  "rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-pink-500";
+  "rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-violet-500";
 
 export function MedicationForm({
   medication,
@@ -124,7 +124,7 @@ export function MedicationForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 disabled:opacity-60"
+          className="rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60"
         >
           {pending ? "Speichern …" : isEdit ? "Änderungen speichern" : "Medikament hinzufügen"}
         </button>

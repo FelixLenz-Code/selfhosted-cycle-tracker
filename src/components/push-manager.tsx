@@ -126,12 +126,12 @@ export function PushManager({ vapidPublicKey }: { vapidPublicKey: string }) {
             <button onClick={unsubscribe} disabled={busy} className={`${btn} border border-black/15 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/10`}>
               Benachrichtigungen deaktivieren
             </button>
-            <button onClick={test} disabled={busy} className={`${btn} bg-pink-600 text-white hover:bg-pink-700`}>
+            <button onClick={test} disabled={busy} className={`${btn} bg-violet-600 text-white hover:bg-violet-700`}>
               Test senden
             </button>
           </>
         ) : (
-          <button onClick={subscribe} disabled={busy} className={`${btn} bg-pink-600 text-white hover:bg-pink-700`}>
+          <button onClick={subscribe} disabled={busy} className={`${btn} bg-violet-600 text-white hover:bg-violet-700`}>
             Benachrichtigungen aktivieren
           </button>
         )}

@@ -12,10 +12,10 @@ export function GvWindow({ stats }: { stats: CycleStats }) {
   const daysToStart = diffDays(stats.gvWindow.start, today);
 
   const isTtc = stats.mode === "ttc";
-  const title = isTtc ? "Günstige Zeit (Kinderwunsch)" : "Vermeidungs-Fenster";
+  const title = isTtc ? "Günstige Zeit (Kinderwunsch)" : "Spaß-Zeit";
 
   let statusText: string;
-  if (inWindow) statusText = isTtc ? "Heute im fruchtbaren Fenster." : "Heute im Vermeidungs-Fenster.";
+  if (inWindow) statusText = isTtc ? "Heute im fruchtbaren Fenster." : "Heute in der Spaß-Zeit.";
   else if (daysToStart > 0) statusText = `Beginnt in ${daysToStart} Tagen.`;
   else statusText = "Aktuell außerhalb des Fensters.";
 
@@ -31,7 +31,7 @@ export function GvWindow({ stats }: { stats: CycleStats }) {
     >
       <div className="flex items-center justify-between gap-3">
         <h3 className="font-medium">{title}</h3>
-        <Link href="/settings" className="text-xs text-pink-600 hover:underline">
+        <Link href="/settings" className="text-xs text-violet-600 hover:underline">
           anpassen
         </Link>
       </div>
@@ -41,7 +41,7 @@ export function GvWindow({ stats }: { stats: CycleStats }) {
       <p className="mt-0.5 text-sm text-black/60 dark:text-white/60">{statusText}</p>
       {!isTtc && (
         <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
-          Kein sicheres Verhütungsmittel – nur als Orientierung.
+          Keine sichere Verhütung – nur als Orientierung.
         </p>
       )}
     </div>

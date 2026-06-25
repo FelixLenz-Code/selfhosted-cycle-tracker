@@ -31,7 +31,7 @@ export function AppShell({
                 href={l.href}
                 className={`rounded-md px-3 py-1.5 text-sm ${
                   active === l.key
-                    ? "bg-pink-600 text-white"
+                    ? "bg-violet-600 text-white"
                     : "hover:bg-black/5 dark:hover:bg-white/10"
                 }`}
               >

@@ -68,15 +68,15 @@ function makeIcon(size, bg, circle, radiusFactor = 0.3) {
   return pngFromRGBA(size, size, rgba);
 }
 
-const PINK = [219, 39, 119, 255];
+const ACCENT = [124, 58, 237, 255]; // violet-600
 const WHITE = [255, 255, 255, 255];
 const TRANSPARENT = [0, 0, 0, 0];
 
 const files = {
-  "public/icon-192x192.png": makeIcon(192, PINK, WHITE),
-  "public/icon-512x512.png": makeIcon(512, PINK, WHITE),
-  "public/icon.png": makeIcon(192, PINK, WHITE),
-  "public/apple-icon.png": makeIcon(180, PINK, WHITE),
+  "public/icon-192x192.png": makeIcon(192, ACCENT, WHITE),
+  "public/icon-512x512.png": makeIcon(512, ACCENT, WHITE),
+  "public/icon.png": makeIcon(192, ACCENT, WHITE),
+  "public/apple-icon.png": makeIcon(180, ACCENT, WHITE),
   // Badge: monochrom weiß auf transparent
   "public/badge.png": makeIcon(96, TRANSPARENT, WHITE, 0.42),
 };

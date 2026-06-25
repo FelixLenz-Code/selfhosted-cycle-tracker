@@ -16,46 +16,62 @@ export function PeriodList({
 }) {
   if (entries.length === 0) {
     return (
-      <p className="text-sm text-black/60 dark:text-white/60">
+      <div className="rounded-xl border border-dashed border-black/15 dark:border-white/20 p-6 text-center text-sm text-black/50 dark:text-white/50">
         Noch keine Einträge. Trage oben deine erste Blutung ein.
-      </p>
+      </div>
     );
   }
 
   return (
-    <ul className="flex flex-col divide-y divide-black/10 dark:divide-white/10">
+    <ul className="overflow-hidden rounded-xl border border-black/10 dark:border-white/15 divide-y divide-black/5 dark:divide-white/10">
       {entries.map((e) => {
-        const days =
-          e.endDate !== null ? diffDays(e.endDate, e.startDate) + 1 : null;
+        const ongoing = e.endDate === null;
+        const days = e.endDate !== null ? diffDays(e.endDate, e.startDate) + 1 : null;
         return (
-          <li key={e.id} className="flex items-center justify-between gap-3 py-3">
-            <div className="text-sm">
-              <span className="font-medium">{formatGermanDate(e.startDate)}</span>
-              {e.endDate ? (
-                <>
-                  {" – "}
-                  <span className="font-medium">{formatGermanDate(e.endDate)}</span>
-                  <span className="ml-2 text-black/50 dark:text-white/50">
-                    ({days} {days === 1 ? "Tag" : "Tage"})
+          <li
+            key={e.id}
+            className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.03]"
+          >
+            <span
+              className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+                ongoing ? "bg-rose-500 animate-pulse" : "bg-rose-400/70"
+              }`}
+              aria-hidden
+            />
+
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-2 text-sm">
+                <span className="font-medium">{formatGermanDate(e.startDate)}</span>
+                {e.endDate && (
+                  <>
+                    <span className="text-black/30 dark:text-white/30">→</span>
+                    <span className="font-medium">{formatGermanDate(e.endDate)}</span>
+                  </>
+                )}
+              </div>
+              <div className="mt-0.5 text-xs text-black/50 dark:text-white/50">
+                {ongoing ? (
+                  <span className="inline-flex items-center rounded-full bg-rose-500/15 px-2 py-0.5 font-medium text-rose-700 dark:text-rose-300">
+                    läuft noch
                   </span>
-                </>
-              ) : (
-                <span className="ml-2 rounded-full bg-pink-600/15 px-2 py-0.5 text-xs text-pink-700 dark:text-pink-300">
-                  läuft noch
-                </span>
-              )}
+                ) : (
+                  <>
+                    {days} {days === 1 ? "Tag" : "Tage"} Blutung
+                  </>
+                )}
+              </div>
             </div>
 
             {canEdit && (
-              <div className="flex items-center gap-2">
-                {e.endDate === null && (
+              <div className="flex shrink-0 items-center gap-1">
+                {ongoing && (
                   <form action={endPeriod}>
                     <input type="hidden" name="id" value={e.id} />
                     <input type="hidden" name="ownerId" value={ownerId} />
                     <input type="hidden" name="endDate" value={today} />
                     <button
                       type="submit"
-                      className="rounded-md border border-black/15 dark:border-white/20 px-2.5 py-1 text-xs hover:bg-black/5 dark:hover:bg-white/10"
+                      className="rounded-md border border-black/15 dark:border-white/20 px-2.5 py-1 text-xs font-medium hover:bg-black/5 dark:hover:bg-white/10"
                     >
                       Heute beenden
                     </button>
@@ -66,9 +82,10 @@ export function PeriodList({
                   <input type="hidden" name="ownerId" value={ownerId} />
                   <button
                     type="submit"
-                    className="rounded-md px-2.5 py-1 text-xs text-red-600 hover:bg-red-500/10"
+                    aria-label="Eintrag löschen"
+                    className="rounded-md px-2 py-1 text-xs text-black/40 hover:bg-red-500/10 hover:text-red-600 dark:text-white/40"
                   >
-                    Löschen
+                    ✕
                   </button>
                 </form>
               </div>

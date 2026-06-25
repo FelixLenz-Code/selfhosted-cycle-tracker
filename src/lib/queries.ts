@@ -8,8 +8,8 @@ export type CycleSettingsForm = {
   avgCycleLengthOverride: number | null;
   lutealPhaseDays: number;
   mode: CycleMode;
-  windowStartOffset: number;
-  windowEndOffset: number;
+  windowStartDay: number;
+  windowEndDay: number | null;
   notifyTime: string; // "HH:MM"
   notifyAudience: "owner" | "partner" | "both";
 };
@@ -33,8 +33,8 @@ export async function getCycleSettings(ownerId: string): Promise<CycleSettingsLi
       avgCycleLengthOverride: cycleSettings.avgCycleLengthOverride,
       lutealPhaseDays: cycleSettings.lutealPhaseDays,
       mode: cycleSettings.mode,
-      windowStartOffset: cycleSettings.windowStartOffset,
-      windowEndOffset: cycleSettings.windowEndOffset,
+      windowStartDay: cycleSettings.windowStartDay,
+      windowEndDay: cycleSettings.windowEndDay,
     })
     .from(cycleSettings)
     .where(eq(cycleSettings.ownerId, ownerId))
@@ -45,8 +45,8 @@ export async function getCycleSettings(ownerId: string): Promise<CycleSettingsLi
       avgCycleLengthOverride: null,
       lutealPhaseDays: 14,
       mode: "ttc",
-      windowStartOffset: -4,
-      windowEndOffset: 1,
+      windowStartDay: 12,
+      windowEndDay: 15,
     }
   );
 }
@@ -57,8 +57,8 @@ export async function getCycleSettingsForm(ownerId: string): Promise<CycleSettin
       avgCycleLengthOverride: cycleSettings.avgCycleLengthOverride,
       lutealPhaseDays: cycleSettings.lutealPhaseDays,
       mode: cycleSettings.mode,
-      windowStartOffset: cycleSettings.windowStartOffset,
-      windowEndOffset: cycleSettings.windowEndOffset,
+      windowStartDay: cycleSettings.windowStartDay,
+      windowEndDay: cycleSettings.windowEndDay,
       notifyTime: cycleSettings.notifyTime,
       notifyAudience: cycleSettings.notifyAudience,
     })
@@ -72,8 +72,8 @@ export async function getCycleSettingsForm(ownerId: string): Promise<CycleSettin
       avgCycleLengthOverride: null,
       lutealPhaseDays: 14,
       mode: "ttc",
-      windowStartOffset: -4,
-      windowEndOffset: 1,
+      windowStartDay: 12,
+      windowEndDay: 15,
       notifyTime: "09:00",
       notifyAudience: "owner",
     };

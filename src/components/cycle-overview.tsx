@@ -16,7 +16,7 @@ function Card({
     <div
       className={`rounded-xl border p-4 ${
         accent
-          ? "border-pink-500/40 bg-pink-500/5"
+          ? "border-violet-500/40 bg-violet-500/5"
           : "border-black/10 dark:border-white/15"
       }`}
     >

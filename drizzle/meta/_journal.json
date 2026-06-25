@@ -15,6 +15,20 @@
       "when": 1782400967690,
       "tag": "0001_great_magdalene",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782404038637,
+      "tag": "0002_curly_electro",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782404054076,
+      "tag": "0003_parched_cargill",
+      "breakpoints": true
     }
   ]
 }
