@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: zyklus_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zyklus
+      POSTGRES_PASSWORD: zyklus_dev_pw
+      POSTGRES_DB: zyklus
+    ports:
+      - "5433:5432"
+    volumes:
+      - zyklus_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zyklus -d zyklus"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  zyklus_pgdata:
