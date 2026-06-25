@@ -11,6 +11,16 @@ import type { Medication } from "@/lib/medications-queries";
 const inputClass =
   "rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-violet-500";
 
+const WEEKDAYS = [
+  { n: 1, label: "Mo" },
+  { n: 2, label: "Di" },
+  { n: 3, label: "Mi" },
+  { n: 4, label: "Do" },
+  { n: 5, label: "Fr" },
+  { n: 6, label: "Sa" },
+  { n: 7, label: "So" },
+];
+
 export function MedicationForm({
   medication,
   onDone,
@@ -90,6 +100,31 @@ export function MedicationForm({
           Nur an bestimmten Zyklustagen
         </label>
       </fieldset>
+
+      {scheduleType === "fixed_time" && (
+        <div className="flex flex-col gap-1 text-sm">
+          <span className="font-medium">Wochentage</span>
+          <div className="flex flex-wrap gap-1.5">
+            {WEEKDAYS.map(({ n, label }) => (
+              <label key={n} className="cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="weekdays"
+                  value={n}
+                  defaultChecked={medication?.weekdays.includes(n)}
+                  className="peer sr-only"
+                />
+                <span className="inline-flex h-9 w-10 items-center justify-center rounded-md border border-black/15 dark:border-white/20 text-sm peer-checked:border-violet-600 peer-checked:bg-violet-600 peer-checked:text-white">
+                  {label}
+                </span>
+              </label>
+            ))}
+          </div>
+          <span className="text-xs text-black/50 dark:text-white/50">
+            Keine Auswahl = täglich.
+          </span>
+        </div>
+      )}
 
       {scheduleType === "cycle_relative" && (
         <div className="flex flex-wrap gap-3">

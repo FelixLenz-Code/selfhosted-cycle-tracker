@@ -45,6 +45,18 @@ export function RegisterForm() {
         )}
       </div>
 
+      <fieldset className="flex flex-col gap-2">
+        <span className="text-sm font-medium">Verfolgst du deinen eigenen Zyklus?</span>
+        <label className="flex items-start gap-2 text-sm">
+          <input type="radio" name="tracksCycle" value="yes" defaultChecked className="mt-0.5" />
+          <span>Ja, ich tracke meinen Zyklus (ich menstruiere)</span>
+        </label>
+        <label className="flex items-start gap-2 text-sm">
+          <input type="radio" name="tracksCycle" value="no" className="mt-0.5" />
+          <span>Nein, ich begleite jemanden (z.&nbsp;B. als Partner)</span>
+        </label>
+      </fieldset>
+
       {state?.error && <p className="text-sm text-red-500">{state.error}</p>}
 
       <button

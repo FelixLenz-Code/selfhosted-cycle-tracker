@@ -36,13 +36,20 @@ export default async function CalendarPage({
   const access = await resolveOwnerAccess(user, owner);
   if (!access) redirect("/calendar");
 
+  const linkedOwners = await getLinkedOwners(user.id);
+
+  // Begleiter ohne eigenen Zyklus -> auf eine freigegebene Person umleiten.
+  if (access.isSelf && !user.tracksCycle) {
+    if (linkedOwners.length > 0) redirect(`/calendar?owner=${linkedOwners[0].ownerId}`);
+    redirect("/dashboard");
+  }
+
   const monthStart = normalizeMonth(m);
   const ownerQuery = access.isSelf ? "" : `&owner=${access.ownerId}`;
 
-  const [entries, settings, linkedOwners] = await Promise.all([
+  const [entries, settings] = await Promise.all([
     getPeriodEntries(access.ownerId),
     getCycleSettings(access.ownerId),
-    getLinkedOwners(user.id),
   ]);
   const stats = computeCycleStats(entries, settings, todayISO());
 
@@ -51,7 +58,7 @@ export default async function CalendarPage({
 
   return (
     <AppShell active="calendar" userName={user.displayName}>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">
           Kalender{access.isSelf ? "" : ` – ${access.ownerName}`}
         </h1>
@@ -82,6 +89,7 @@ export default async function CalendarPage({
         selfName={user.displayName}
         linkedOwners={linkedOwners}
         activeOwnerId={access.ownerId}
+        includeSelf={user.tracksCycle}
       />
 
       <section className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-4">

@@ -10,6 +10,7 @@ export type CurrentUser = {
   id: string;
   email: string;
   displayName: string;
+  tracksCycle: boolean;
 };
 
 // Innerhalb eines Renderdurchlaufs memoisiert (React cache).
@@ -22,6 +23,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       id: users.id,
       email: users.email,
       displayName: users.displayName,
+      tracksCycle: users.tracksCycle,
     })
     .from(users)
     .where(eq(users.id, userId))

@@ -39,6 +39,8 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   displayName: text("display_name").notNull(),
+  // true = trackt eigenen Zyklus (menstruiert); false = begleitet jemanden (z. B. Partner)
+  tracksCycle: boolean("tracks_cycle").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -121,6 +123,8 @@ export const medications = pgTable("medications", {
   active: boolean("active").notNull().default(true),
   scheduleType: medScheduleType("schedule_type").notNull().default("fixed_time"),
   times: jsonb("times").$type<string[]>().notNull().default([]), // ["08:00","20:00"]
+  // Wochentage (ISO 1=Mo .. 7=So) für feste Zeiten; leer = täglich
+  weekdays: jsonb("weekdays").$type<number[]>().notNull().default([]),
   cycleDayFrom: integer("cycle_day_from"),
   cycleDayTo: integer("cycle_day_to"),
   createdAt: timestamp("created_at", { withTimezone: true })

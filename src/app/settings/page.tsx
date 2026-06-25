@@ -6,20 +6,21 @@ import { CycleSettingsForm } from "@/components/cycle-settings-form";
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  const settings = await getCycleSettingsForm(user.id);
 
   return (
     <AppShell active="settings" userName={user.displayName}>
       <h1 className="text-2xl font-semibold">Einstellungen</h1>
 
-      <section className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-5">
-        <h2 className="text-lg font-medium">GV-Hinweis &amp; Zyklus</h2>
-        <p className="mt-1 mb-4 text-sm text-black/60 dark:text-white/60">
-          Lege fest, ob du Hinweise zur fruchtbaren (Kinderwunsch) oder unfruchtbaren
-          (Vermeidung) Zeit erhalten möchtest. Das Fenster ist frei wählbar.
-        </p>
-        <CycleSettingsForm settings={settings} />
-      </section>
+      {user.tracksCycle && (
+        <section className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-5">
+          <h2 className="text-lg font-medium">Hinweis-Fenster &amp; Zyklus</h2>
+          <p className="mt-1 mb-4 text-sm text-black/60 dark:text-white/60">
+            Lege fest, ob du Hinweise zur fruchtbaren Zeit (Kinderwunsch) oder zur
+            Spaß-Zeit erhalten möchtest. Das Fenster ist frei wählbar.
+          </p>
+          <CycleSettingsForm settings={await getCycleSettingsForm(user.id)} />
+        </section>
+      )}
 
       <section className="mt-8 rounded-xl border border-black/10 dark:border-white/15 p-5">
         <h2 className="text-lg font-medium">Push-Benachrichtigungen</h2>

@@ -19,6 +19,7 @@ const medSchema = z
     times: z
       .array(z.string().regex(timeRe, { error: "Uhrzeit muss HH:MM sein." }))
       .min(1, { error: "Mindestens eine Uhrzeit angeben (z. B. 08:00)." }),
+    weekdays: z.array(z.number().int().min(1).max(7)),
     cycleDayFrom: z.number().int().min(1).max(60).nullable(),
     cycleDayTo: z.number().int().min(1).max(60).nullable(),
   })
@@ -40,11 +41,18 @@ function parseForm(formData: FormData) {
     const s = String(v ?? "").trim();
     return s === "" ? null : Number(s);
   };
+  const weekdays = formData
+    .getAll("weekdays")
+    .map((v) => Number(v))
+    .filter((n) => n >= 1 && n <= 7)
+    .sort((a, b) => a - b);
+
   return medSchema.safeParse({
     name: formData.get("name"),
     dosage: String(formData.get("dosage") ?? "").trim() || undefined,
     scheduleType: formData.get("scheduleType"),
     times,
+    weekdays,
     cycleDayFrom: numOrNull(formData.get("cycleDayFrom")),
     cycleDayTo: numOrNull(formData.get("cycleDayTo")),
   });
@@ -66,6 +74,7 @@ export async function addMedication(
     dosage: d.dosage ?? null,
     scheduleType: d.scheduleType,
     times: d.times,
+    weekdays: d.scheduleType === "fixed_time" ? d.weekdays : [],
     cycleDayFrom: d.scheduleType === "cycle_relative" ? d.cycleDayFrom : null,
     cycleDayTo: d.scheduleType === "cycle_relative" ? d.cycleDayTo : null,
   });
@@ -92,6 +101,7 @@ export async function updateMedication(
       dosage: d.dosage ?? null,
       scheduleType: d.scheduleType,
       times: d.times,
+      weekdays: d.scheduleType === "fixed_time" ? d.weekdays : [],
       cycleDayFrom: d.scheduleType === "cycle_relative" ? d.cycleDayFrom : null,
       cycleDayTo: d.scheduleType === "cycle_relative" ? d.cycleDayTo : null,
     })

@@ -10,16 +10,22 @@ export function OwnerSwitcher({
   selfName,
   linkedOwners,
   activeOwnerId,
+  includeSelf = true,
 }: {
   basePath: string;
   selfId: string;
   selfName: string;
   linkedOwners: SwitcherOwner[];
   activeOwnerId: string;
+  includeSelf?: boolean;
 }) {
+  // Ohne eigenen Zyklus und ohne Freigaben gibt es nichts umzuschalten.
   if (linkedOwners.length === 0) return null;
+  if (!includeSelf && linkedOwners.length < 2) return null;
 
-  const tabs = [{ ownerId: selfId, ownerName: `${selfName} (du)` }, ...linkedOwners];
+  const tabs = includeSelf
+    ? [{ ownerId: selfId, ownerName: `${selfName} (du)` }, ...linkedOwners]
+    : linkedOwners;
 
   return (
     <div className="mt-4 flex flex-wrap gap-1">

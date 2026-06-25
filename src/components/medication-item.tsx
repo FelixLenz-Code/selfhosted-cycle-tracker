@@ -11,10 +11,13 @@ import type { Medication } from "@/lib/medications-queries";
 export function MedicationItem({ medication }: { medication: Medication }) {
   const [editing, setEditing] = useState(false);
 
+  const WD = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
   const schedule =
     medication.scheduleType === "cycle_relative"
       ? `Zyklustag ${medication.cycleDayFrom ?? "?"}–${medication.cycleDayTo ?? "?"}`
-      : "täglich";
+      : medication.weekdays.length > 0
+        ? medication.weekdays.map((d) => WD[d - 1]).join(", ")
+        : "täglich";
 
   return (
     <li className="py-3">

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/dal";
 import { resolveOwnerAccess, getLinkedOwners } from "@/lib/access";
@@ -21,10 +22,35 @@ export default async function DashboardPage({
   const access = await resolveOwnerAccess(user, owner);
   if (!access) redirect("/dashboard");
 
-  const [entries, settings, linkedOwners] = await Promise.all([
+  const linkedOwners = await getLinkedOwners(user.id);
+
+  // Begleiter ohne eigenen Zyklus: eigene Ansicht hat keine Zyklusdaten.
+  if (access.isSelf && !user.tracksCycle) {
+    if (linkedOwners.length > 0) {
+      redirect(`/dashboard?owner=${linkedOwners[0].ownerId}`);
+    }
+    return (
+      <AppShell active="dashboard" userName={user.displayName}>
+        <h1 className="text-2xl font-semibold">Hallo, {user.displayName}</h1>
+        <div className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-6 text-sm text-black/70 dark:text-white/70">
+          <p>
+            Du trackst keinen eigenen Zyklus. Sobald dich die Person, die du
+            begleitest, freigibt, siehst du hier ihre Daten.
+          </p>
+          <Link
+            href="/partners"
+            className="mt-4 inline-block rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700"
+          >
+            Zu „Partner"
+          </Link>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const [entries, settings] = await Promise.all([
     getPeriodEntries(access.ownerId),
     getCycleSettings(access.ownerId),
-    getLinkedOwners(user.id),
   ]);
 
   const today = todayISO();
@@ -42,6 +68,7 @@ export default async function DashboardPage({
         selfName={user.displayName}
         linkedOwners={linkedOwners}
         activeOwnerId={access.ownerId}
+        includeSelf={user.tracksCycle}
       />
 
       {!access.isSelf && (

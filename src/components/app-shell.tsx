@@ -22,14 +22,25 @@ export function AppShell({
 }) {
   return (
     <div className="min-h-screen">
-      <header className="border-b border-black/10 dark:border-white/15">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <nav className="flex items-center gap-1">
+      <header className="sticky top-0 z-20 border-b border-black/10 dark:border-white/15 bg-white/80 dark:bg-black/70 backdrop-blur">
+        <div className="mx-auto max-w-3xl px-3">
+          <div className="flex items-center justify-between gap-2 py-2">
+            <Link href="/dashboard" className="font-semibold tracking-tight">
+              Zyklus
+            </Link>
+            <div className="flex items-center gap-2">
+              <span className="hidden text-sm text-black/60 dark:text-white/60 sm:inline">
+                {userName}
+              </span>
+              <LogoutButton />
+            </div>
+          </div>
+          <nav className="no-scrollbar flex gap-1 overflow-x-auto pb-2">
             {links.map((l) => (
               <Link
                 key={l.key}
                 href={l.href}
-                className={`rounded-md px-3 py-1.5 text-sm ${
+                className={`shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-sm ${
                   active === l.key
                     ? "bg-violet-600 text-white"
                     : "hover:bg-black/5 dark:hover:bg-white/10"
@@ -39,15 +50,9 @@ export function AppShell({
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-black/60 dark:text-white/60 sm:inline">
-              {userName}
-            </span>
-            <LogoutButton />
-          </div>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
+      <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
     </div>
   );
 }

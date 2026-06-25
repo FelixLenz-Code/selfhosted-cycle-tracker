@@ -23,13 +23,14 @@ export async function signup(
     displayName: formData.get("displayName"),
     email: formData.get("email"),
     password: formData.get("password"),
+    tracksCycle: formData.get("tracksCycle") !== "no",
   });
 
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
-  const { displayName, email, password } = parsed.data;
+  const { displayName, email, password, tracksCycle } = parsed.data;
 
   const existing = await db
     .select({ id: users.id })
@@ -45,13 +46,15 @@ export async function signup(
 
   const inserted = await db
     .insert(users)
-    .values({ email, passwordHash, displayName })
+    .values({ email, passwordHash, displayName, tracksCycle })
     .returning({ id: users.id });
 
   const userId = inserted[0].id;
 
-  // Standard-Zykluseinstellungen anlegen
-  await db.insert(cycleSettings).values({ ownerId: userId }).onConflictDoNothing();
+  // Standard-Zykluseinstellungen nur für Personen mit eigenem Zyklus anlegen
+  if (tracksCycle) {
+    await db.insert(cycleSettings).values({ ownerId: userId }).onConflictDoNothing();
+  }
 
   await createSession(userId);
   redirect("/dashboard");

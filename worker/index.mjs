@@ -91,13 +91,21 @@ async function processMedications() {
   const hhmm = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
   const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 
+  // ISO-Wochentag: 1=Mo .. 7=So
+  const isoWeekday = ((now.getDay() + 6) % 7) + 1;
+
   const meds = await sql`
-    select id, owner_id, name, dosage, schedule_type, times, cycle_day_from, cycle_day_to
+    select id, owner_id, name, dosage, schedule_type, times, weekdays, cycle_day_from, cycle_day_to
     from medications where active = true`;
 
   for (const m of meds) {
     const times = Array.isArray(m.times) ? m.times : [];
     if (!times.includes(hhmm)) continue;
+
+    if (m.schedule_type === "fixed_time") {
+      const weekdays = Array.isArray(m.weekdays) ? m.weekdays : [];
+      if (weekdays.length > 0 && !weekdays.includes(isoWeekday)) continue;
+    }
 
     if (m.schedule_type === "cycle_relative") {
       const cd = await currentCycleDay(m.owner_id, todayStr);

@@ -13,6 +13,7 @@ export const signupSchema = z.object({
   password: z
     .string()
     .min(8, { error: "Passwort muss mindestens 8 Zeichen lang sein." }),
+  tracksCycle: z.boolean(),
 });
 
 export const loginSchema = z.object({
