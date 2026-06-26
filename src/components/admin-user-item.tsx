@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import {
   setUserAdmin,
   deleteUser,
@@ -14,6 +14,8 @@ const inputClass =
   "rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-violet-500";
 const btnClass =
   "rounded-md border border-black/15 dark:border-white/20 px-2.5 py-1 text-xs font-medium hover:bg-black/5 dark:hover:bg-white/10";
+const dialogClass =
+  "m-auto w-[calc(100%-2rem)] max-w-sm rounded-xl border border-black/10 bg-white p-5 text-black shadow-xl backdrop:bg-black/50 dark:border-white/15 dark:bg-neutral-900 dark:text-white";
 
 type AdminUser = {
   id: string;
@@ -33,7 +35,9 @@ export function AdminUserItem({
   currentUserId: string;
   adminCount: number;
 }) {
-  const [panel, setPanel] = useState<null | "edit" | "password">(null);
+  const editRef = useRef<HTMLDialogElement>(null);
+  const pwRef = useRef<HTMLDialogElement>(null);
+
   const [editState, editAction, editPending] = useActionState<AdminActionState, FormData>(
     editUser,
     undefined,
@@ -43,8 +47,21 @@ export function AdminUserItem({
     undefined,
   );
 
+  // Bei Erfolg den jeweiligen Dialog schließen (neue Objektreferenz pro Submit).
+  useEffect(() => {
+    if (editState?.ok) editRef.current?.close();
+  }, [editState]);
+  useEffect(() => {
+    if (pwState?.ok) pwRef.current?.close();
+  }, [pwState]);
+
   const isSelf = user.id === currentUserId;
   const isLastAdmin = user.isAdmin && adminCount <= 1;
+
+  // Klick auf den Backdrop (außerhalb des Inhalts) schließt den Dialog.
+  function closeOnBackdrop(e: React.MouseEvent<HTMLDialogElement>) {
+    if (e.target === e.currentTarget) e.currentTarget.close();
+  }
 
   return (
     <li className="px-4 py-3">
@@ -80,18 +97,10 @@ export function AdminUserItem({
               </button>
             </form>
           )}
-          <button
-            type="button"
-            className={btnClass}
-            onClick={() => setPanel(panel === "edit" ? null : "edit")}
-          >
+          <button type="button" className={btnClass} onClick={() => editRef.current?.showModal()}>
             Bearbeiten
           </button>
-          <button
-            type="button"
-            className={btnClass}
-            onClick={() => setPanel(panel === "password" ? null : "password")}
-          >
+          <button type="button" className={btnClass} onClick={() => pwRef.current?.showModal()}>
             Passwort
           </button>
           {!isSelf && !isLastAdmin && (
@@ -107,8 +116,10 @@ export function AdminUserItem({
         </div>
       </div>
 
-      {panel === "edit" && (
-        <form action={editAction} className="mt-3 flex flex-wrap items-end gap-2">
+      {/* Dialog: Nutzer bearbeiten */}
+      <dialog ref={editRef} className={dialogClass} onClick={closeOnBackdrop}>
+        <form action={editAction} className="flex flex-col gap-3">
+          <h3 className="text-base font-medium">Nutzer bearbeiten</h3>
           <input type="hidden" name="id" value={user.id} />
           <label className="flex flex-col gap-1 text-xs">
             <span className="text-black/60 dark:text-white/60">Name</span>
@@ -116,31 +127,35 @@ export function AdminUserItem({
           </label>
           <label className="flex flex-col gap-1 text-xs">
             <span className="text-black/60 dark:text-white/60">E-Mail</span>
-            <input
-              name="email"
-              type="email"
-              defaultValue={user.email}
-              className={inputClass}
-            />
+            <input name="email" type="email" defaultValue={user.email} className={inputClass} />
           </label>
-          <button
-            type="submit"
-            disabled={editPending}
-            className="rounded-md bg-violet-600 px-3 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
-          >
-            Speichern
-          </button>
-          {editState?.error && (
-            <span className="text-xs text-red-600">{editState.error}</span>
-          )}
-          {editState?.ok && (
-            <span className="text-xs text-green-600">{editState.ok}</span>
-          )}
+          {editState?.error && <p className="text-xs text-red-600">{editState.error}</p>}
+          <div className="mt-1 flex justify-end gap-2">
+            <button
+              type="button"
+              className={btnClass}
+              onClick={() => editRef.current?.close()}
+            >
+              Abbrechen
+            </button>
+            <button
+              type="submit"
+              disabled={editPending}
+              className="rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+            >
+              Speichern
+            </button>
+          </div>
         </form>
-      )}
+      </dialog>
 
-      {panel === "password" && (
-        <form action={pwAction} className="mt-3 flex flex-wrap items-end gap-2">
+      {/* Dialog: Passwort ändern */}
+      <dialog ref={pwRef} className={dialogClass} onClick={closeOnBackdrop}>
+        <form action={pwAction} className="flex flex-col gap-3">
+          <h3 className="text-base font-medium">Passwort ändern</h3>
+          <p className="text-xs text-black/60 dark:text-white/60">
+            Neues Passwort für {user.displayName}. Bestehende Sitzungen werden beendet.
+          </p>
           <input type="hidden" name="id" value={user.id} />
           <label className="flex flex-col gap-1 text-xs">
             <span className="text-black/60 dark:text-white/60">Neues Passwort</span>
@@ -151,17 +166,21 @@ export function AdminUserItem({
               className={inputClass}
             />
           </label>
-          <button
-            type="submit"
-            disabled={pwPending}
-            className="rounded-md bg-violet-600 px-3 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
-          >
-            Setzen
-          </button>
-          {pwState?.error && <span className="text-xs text-red-600">{pwState.error}</span>}
-          {pwState?.ok && <span className="text-xs text-green-600">{pwState.ok}</span>}
+          {pwState?.error && <p className="text-xs text-red-600">{pwState.error}</p>}
+          <div className="mt-1 flex justify-end gap-2">
+            <button type="button" className={btnClass} onClick={() => pwRef.current?.close()}>
+              Abbrechen
+            </button>
+            <button
+              type="submit"
+              disabled={pwPending}
+              className="rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+            >
+              Setzen
+            </button>
+          </div>
         </form>
-      )}
+      </dialog>
     </li>
   );
 }
