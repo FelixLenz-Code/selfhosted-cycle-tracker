@@ -19,9 +19,101 @@ export function CycleSettingsForm({ settings }: { settings: Settings }) {
   const [untilBleeding, setUntilBleeding] = useState(settings.windowEndDay === null);
 
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={action} className="flex flex-col gap-5">
+      <div className="rounded-md bg-black/5 dark:bg-white/10 p-3 text-xs text-black/60 dark:text-white/60">
+        Zyklustag&nbsp;1 = erster Tag der Blutung. Beide Fenster werden immer im
+        Kalender angezeigt. Der Fokus unten steuert nur, worüber du benachrichtigt
+        wirst.
+      </div>
+
+      {/* Fruchtbare Zeit (Kinderwunsch) */}
+      <fieldset className="flex flex-col gap-3 rounded-xl border border-green-600/40 p-4">
+        <legend className="px-1 text-sm font-medium text-green-700 dark:text-green-300">
+          Fruchtbare Zeit (Kinderwunsch)
+        </legend>
+        <p className="text-xs text-black/60 dark:text-white/60">
+          Im Kalender grün markiert. Typisch etwa Zyklustag&nbsp;12–16.
+        </p>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium">von Zyklustag</span>
+            <input
+              type="number"
+              name="fertileStartDay"
+              defaultValue={settings.fertileStartDay}
+              min={1}
+              max={60}
+              className={`${inputClass} w-28`}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium">bis Zyklustag</span>
+            <input
+              type="number"
+              name="fertileEndDay"
+              defaultValue={settings.fertileEndDay}
+              min={1}
+              max={60}
+              className={`${inputClass} w-28`}
+            />
+          </label>
+        </div>
+      </fieldset>
+
+      {/* Spaß-Zeit */}
+      <fieldset className="flex flex-col gap-3 rounded-xl border border-violet-500/40 p-4">
+        <legend className="px-1 text-sm font-medium text-violet-700 dark:text-violet-300">
+          Spaß-Zeit
+        </legend>
+        <p className="text-xs text-black/60 dark:text-white/60">
+          Im Kalender mit ♥ und violettem Rahmen. Typisch z.&nbsp;B. ab Tag&nbsp;28
+          bis zur nächsten Blutung.
+        </p>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium">von Zyklustag</span>
+            <input
+              type="number"
+              name="windowStartDay"
+              defaultValue={settings.windowStartDay}
+              min={1}
+              max={60}
+              className={`${inputClass} w-28`}
+            />
+          </label>
+          {!untilBleeding && (
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">bis Zyklustag</span>
+              <input
+                type="number"
+                name="windowEndDay"
+                defaultValue={settings.windowEndDay ?? 15}
+                min={1}
+                max={60}
+                className={`${inputClass} w-28`}
+              />
+            </label>
+          )}
+        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="untilBleeding"
+            checked={untilBleeding}
+            onChange={(e) => setUntilBleeding(e.target.checked)}
+            className="h-4 w-4"
+          />
+          bis zur nächsten Blutung
+        </label>
+        <div className="rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
+          Hinweis: Das ist <strong>keine sichere Verhütung</strong> – der Eisprung
+          schwankt. Nur als Orientierung verstehen.
+        </div>
+      </fieldset>
+
+      {/* Fokus / Benachrichtigung */}
       <fieldset className="flex flex-col gap-2 text-sm">
-        <span className="font-medium">Ziel</span>
+        <span className="font-medium">Fokus für Benachrichtigungen</span>
         <label className="flex items-center gap-2">
           <input
             type="radio"
@@ -30,7 +122,7 @@ export function CycleSettingsForm({ settings }: { settings: Settings }) {
             checked={mode === "ttc"}
             onChange={() => setMode("ttc")}
           />
-          Kinderwunsch – Hinweis zur günstigen (fruchtbaren) Zeit
+          Kinderwunsch – Hinweis zum Start der fruchtbaren Zeit
         </label>
         <label className="flex items-center gap-2">
           <input
@@ -40,59 +132,9 @@ export function CycleSettingsForm({ settings }: { settings: Settings }) {
             checked={mode === "avoid"}
             onChange={() => setMode("avoid")}
           />
-          Spaß-Zeit – Hinweis zur entspannten Zeit (geringere Wahrscheinlichkeit)
+          Spaß-Zeit – Hinweis zum Start der Spaß-Zeit
         </label>
       </fieldset>
-
-      <div className="rounded-md bg-black/5 dark:bg-white/10 p-3 text-xs text-black/60 dark:text-white/60">
-        Zyklustag&nbsp;1 = erster Tag der Blutung. Beispiele: Kinderwunsch etwa
-        Tag&nbsp;12–15; Spaß-Zeit z.&nbsp;B. ab Tag&nbsp;28 bis zur nächsten Blutung.
-      </div>
-
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Fenster von Zyklustag</span>
-          <input
-            type="number"
-            name="windowStartDay"
-            defaultValue={settings.windowStartDay}
-            min={1}
-            max={60}
-            className={`${inputClass} w-28`}
-          />
-        </label>
-        {!untilBleeding && (
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">bis Zyklustag</span>
-            <input
-              type="number"
-              name="windowEndDay"
-              defaultValue={settings.windowEndDay ?? 15}
-              min={1}
-              max={60}
-              className={`${inputClass} w-28`}
-            />
-          </label>
-        )}
-      </div>
-
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          name="untilBleeding"
-          checked={untilBleeding}
-          onChange={(e) => setUntilBleeding(e.target.checked)}
-          className="h-4 w-4"
-        />
-        bis zur nächsten Blutung
-      </label>
-
-      {mode === "avoid" && (
-        <div className="rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
-          Hinweis: Das ist <strong>keine sichere Verhütung</strong> – der Eisprung
-          schwankt. Nur als Orientierung verstehen.
-        </div>
-      )}
 
       <div className="flex flex-wrap gap-3">
         <label className="flex flex-col gap-1 text-sm">
@@ -121,17 +163,6 @@ export function CycleSettingsForm({ settings }: { settings: Settings }) {
       <details className="text-sm">
         <summary className="cursor-pointer font-medium">Erweitert</summary>
         <div className="mt-3 flex flex-wrap gap-3">
-          <label className="flex flex-col gap-1">
-            <span className="font-medium">Lutealphase (Tage)</span>
-            <input
-              type="number"
-              name="lutealPhaseDays"
-              defaultValue={settings.lutealPhaseDays}
-              min={8}
-              max={20}
-              className={`${inputClass} w-28`}
-            />
-          </label>
           <label className="flex flex-col gap-1">
             <span className="font-medium">Ø Zykluslänge fix</span>
             <input

@@ -158,7 +158,7 @@ async function processGvWindows() {
   const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 
   const rows = await sql`
-    select owner_id, mode, window_start_day, window_end_day,
+    select owner_id, mode, fertile_start_day, window_start_day, window_end_day,
            notify_time, notify_audience, avg_cycle_length_override,
            last_gv_notified::text as last_gv_notified
     from cycle_settings`;
@@ -168,8 +168,10 @@ async function processGvWindows() {
     const info = await cycleInfo(s.owner_id, s.avg_cycle_length_override);
     if (!info) continue;
 
+    // Fokus-Fenster je Modus: Kinderwunsch -> fruchtbare Zeit, sonst -> Spaß-Zeit.
     // Zyklustag 1 = lastStart; Fensterbeginn = lastStart + (Tag - 1)
-    const windowStart = addDays(info.lastStart, s.window_start_day - 1);
+    const startDay = s.mode === "ttc" ? s.fertile_start_day : s.window_start_day;
+    const windowStart = addDays(info.lastStart, startDay - 1);
 
     if (windowStart !== todayStr) continue; // nur am Fenster-Start
     if (s.last_gv_notified === windowStart) continue; // Dedup

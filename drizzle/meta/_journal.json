@@ -50,6 +50,13 @@
       "when": 1782472362696,
       "tag": "0006_tense_garia",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782474438484,
+      "tag": "0007_bright_warhawk",
+      "breakpoints": true
     }
   ]
 }

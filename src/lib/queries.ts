@@ -6,8 +6,9 @@ import type { PeriodEntryLite, CycleSettingsLite, CycleMode } from "./cycle";
 
 export type CycleSettingsForm = {
   avgCycleLengthOverride: number | null;
-  lutealPhaseDays: number;
   mode: CycleMode;
+  fertileStartDay: number;
+  fertileEndDay: number;
   windowStartDay: number;
   windowEndDay: number | null;
   notifyTime: string; // "HH:MM"
@@ -31,8 +32,9 @@ export async function getCycleSettings(ownerId: string): Promise<CycleSettingsLi
   const rows = await db
     .select({
       avgCycleLengthOverride: cycleSettings.avgCycleLengthOverride,
-      lutealPhaseDays: cycleSettings.lutealPhaseDays,
       mode: cycleSettings.mode,
+      fertileStartDay: cycleSettings.fertileStartDay,
+      fertileEndDay: cycleSettings.fertileEndDay,
       windowStartDay: cycleSettings.windowStartDay,
       windowEndDay: cycleSettings.windowEndDay,
     })
@@ -43,10 +45,11 @@ export async function getCycleSettings(ownerId: string): Promise<CycleSettingsLi
   return (
     rows[0] ?? {
       avgCycleLengthOverride: null,
-      lutealPhaseDays: 14,
       mode: "ttc",
-      windowStartDay: 12,
-      windowEndDay: 15,
+      fertileStartDay: 12,
+      fertileEndDay: 16,
+      windowStartDay: 28,
+      windowEndDay: null,
     }
   );
 }
@@ -55,8 +58,9 @@ export async function getCycleSettingsForm(ownerId: string): Promise<CycleSettin
   const rows = await db
     .select({
       avgCycleLengthOverride: cycleSettings.avgCycleLengthOverride,
-      lutealPhaseDays: cycleSettings.lutealPhaseDays,
       mode: cycleSettings.mode,
+      fertileStartDay: cycleSettings.fertileStartDay,
+      fertileEndDay: cycleSettings.fertileEndDay,
       windowStartDay: cycleSettings.windowStartDay,
       windowEndDay: cycleSettings.windowEndDay,
       notifyTime: cycleSettings.notifyTime,
@@ -70,10 +74,11 @@ export async function getCycleSettingsForm(ownerId: string): Promise<CycleSettin
   if (!r) {
     return {
       avgCycleLengthOverride: null,
-      lutealPhaseDays: 14,
       mode: "ttc",
-      windowStartDay: 12,
-      windowEndDay: 15,
+      fertileStartDay: 12,
+      fertileEndDay: 16,
+      windowStartDay: 28,
+      windowEndDay: null,
       notifyTime: "09:00",
       notifyAudience: "owner",
     };

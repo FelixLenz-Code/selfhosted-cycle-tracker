@@ -12,11 +12,14 @@ const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 const schema = z.object({
   mode: z.enum(["ttc", "avoid"]),
+  // Fruchtbares Fenster (Kinderwunsch), manuell.
+  fertileStartDay: z.number().int().min(1).max(60),
+  fertileEndDay: z.number().int().min(1).max(60),
+  // Spaß-Zeit-Fenster; Ende offen (null) = bis zur nächsten Blutung.
   windowStartDay: z.number().int().min(1).max(60),
   windowEndDay: z.number().int().min(1).max(60).nullable(),
   notifyTime: z.string().regex(timeRe, { error: "Uhrzeit muss HH:MM sein." }),
   notifyAudience: z.enum(["owner", "partner", "both"]),
-  lutealPhaseDays: z.number().int().min(8).max(20),
   avgCycleLengthOverride: z.number().int().min(20).max(45).nullable(),
 });
 
@@ -34,11 +37,12 @@ export async function saveCycleSettings(
 
   const parsed = schema.safeParse({
     mode: formData.get("mode"),
+    fertileStartDay: num(formData.get("fertileStartDay")),
+    fertileEndDay: num(formData.get("fertileEndDay")),
     windowStartDay: num(formData.get("windowStartDay")),
     windowEndDay: untilBleeding || endRaw === "" ? null : Number(endRaw),
     notifyTime: formData.get("notifyTime"),
     notifyAudience: formData.get("notifyAudience"),
-    lutealPhaseDays: num(formData.get("lutealPhaseDays")),
     avgCycleLengthOverride: overrideRaw === "" ? null : Number(overrideRaw),
   });
 
@@ -46,8 +50,11 @@ export async function saveCycleSettings(
     return { error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
   }
 
+  if (parsed.data.fertileStartDay > parsed.data.fertileEndDay) {
+    return { error: "Fruchtbares Fenster: Start darf nicht nach dem Ende liegen." };
+  }
   if (parsed.data.windowEndDay !== null && parsed.data.windowStartDay > parsed.data.windowEndDay) {
-    return { error: "Fenster-Start darf nicht nach dem Fenster-Ende liegen." };
+    return { error: "Spaß-Zeit: Start darf nicht nach dem Ende liegen." };
   }
 
   const d = parsed.data;

@@ -120,10 +120,14 @@ export const cycleSettings = pgTable("cycle_settings", {
     .references(() => users.id, { onDelete: "cascade" }),
   avgCycleLengthOverride: integer("avg_cycle_length_override"),
   lutealPhaseDays: integer("luteal_phase_days").notNull().default(14),
+  // Fokus für Benachrichtigung/Dashboard. Beide Fenster werden immer angezeigt.
   mode: cycleMode("mode").notNull().default("ttc"),
-  // Fenster als Zyklustage ab Blutungstag 1. windowEndDay = null -> bis zur nächsten Blutung.
-  windowStartDay: integer("window_start_day").notNull().default(12),
-  windowEndDay: integer("window_end_day").default(15),
+  // Fruchtbares Fenster (Kinderwunsch) als Zyklustage ab Blutungstag 1, manuell.
+  fertileStartDay: integer("fertile_start_day").notNull().default(12),
+  fertileEndDay: integer("fertile_end_day").notNull().default(16),
+  // Spaß-Zeit-Fenster als Zyklustage ab Blutungstag 1. windowEndDay = null -> bis zur nächsten Blutung.
+  windowStartDay: integer("window_start_day").notNull().default(28),
+  windowEndDay: integer("window_end_day"),
   notifyTime: time("notify_time").notNull().default("09:00"),
   notifyAudience: notifyAudience("notify_audience").notNull().default("owner"),
   // Dedup für GV-Fenster-Push: Fensterstart-Datum, für das zuletzt benachrichtigt wurde

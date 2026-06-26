@@ -74,18 +74,13 @@ export function CycleOverview({ stats }: { stats: CycleStats }) {
         hint={nextHint}
       />
       <Card
-        label="Fruchtbares Fenster"
+        label="Fruchtbare Zeit"
         value={
           stats.fertileWindow
             ? `${formatGermanDate(stats.fertileWindow.start)} – ${formatGermanDate(
                 stats.fertileWindow.end,
               )}`
             : "–"
-        }
-        hint={
-          stats.estimatedOvulation
-            ? `Eisprung ~ ${formatGermanDate(stats.estimatedOvulation)}`
-            : undefined
         }
       />
     </div>

@@ -12,9 +12,11 @@ export type CycleMode = "ttc" | "avoid";
 
 export type CycleSettingsLite = {
   avgCycleLengthOverride: number | null;
-  lutealPhaseDays: number;
   mode: CycleMode;
-  // Fenster als Zyklustage ab Blutungstag 1. windowEndDay = null -> bis zur nächsten Blutung.
+  // Fruchtbares Fenster (Kinderwunsch), Zyklustage ab Blutungstag 1 (manuell).
+  fertileStartDay: number;
+  fertileEndDay: number;
+  // Spaß-Zeit-Fenster, Zyklustage ab Blutungstag 1. windowEndDay = null -> bis zur nächsten Blutung.
   windowStartDay: number;
   windowEndDay: number | null;
 };
@@ -29,7 +31,6 @@ export type CycleStats = {
   currentCycleDay: number | null;
   predictedNextPeriod: string | null;
   daysUntilNextPeriod: number | null;
-  estimatedOvulation: string | null;
   fertileWindow: { start: string; end: string } | null;
   // Konfiguriertes GV-Fenster (relativ zum Eisprung, modusabhängige Offsets)
   mode: CycleMode;
@@ -115,20 +116,18 @@ export function computeCycleStats(
 
   let predictedNextPeriod: string | null = null;
   let daysUntilNextPeriod: number | null = null;
-  let estimatedOvulation: string | null = null;
   let fertileWindow: { start: string; end: string } | null = null;
   let gvWindow: { start: string; end: string } | null = null;
 
   if (lastPeriodStart) {
     predictedNextPeriod = addDays(lastPeriodStart, avgCycleLength);
     daysUntilNextPeriod = diffDays(predictedNextPeriod, today);
-    estimatedOvulation = addDays(predictedNextPeriod, -settings.lutealPhaseDays);
+    // Beide Fenster sind manuell, relativ zum Blutungsbeginn (Zyklustag 1 = lastPeriodStart).
     fertileWindow = {
-      start: addDays(estimatedOvulation, -5),
-      end: addDays(estimatedOvulation, 1),
+      start: addDays(lastPeriodStart, settings.fertileStartDay - 1),
+      end: addDays(lastPeriodStart, settings.fertileEndDay - 1),
     };
-    // Fenster relativ zum Blutungsbeginn (Zyklustag 1 = lastPeriodStart).
-    // Ende offen -> bis zum Tag vor der nächsten Blutung.
+    // Spaß-Fenster; Ende offen -> bis zum Tag vor der nächsten Blutung.
     gvWindow = {
       start: addDays(lastPeriodStart, settings.windowStartDay - 1),
       end:
@@ -148,7 +147,6 @@ export function computeCycleStats(
     currentCycleDay,
     predictedNextPeriod,
     daysUntilNextPeriod,
-    estimatedOvulation,
     fertileWindow,
     mode: settings.mode,
     gvWindow,
@@ -162,7 +160,7 @@ export function isInGvWindow(iso: string, stats: CycleStats): boolean {
 }
 
 // Klassifizierung eines Tages für die Kalenderansicht
-export type DayKind = "period" | "predicted-period" | "fertile" | "ovulation" | "none";
+export type DayKind = "period" | "predicted-period" | "fertile" | "none";
 
 export function classifyDay(
   iso: string,
@@ -174,7 +172,6 @@ export function classifyDay(
     const end = e.endDate ?? e.startDate;
     if (isWithin(iso, e.startDate, end)) return "period";
   }
-  if (stats.estimatedOvulation && iso === stats.estimatedOvulation) return "ovulation";
   if (stats.fertileWindow && isWithin(iso, stats.fertileWindow.start, stats.fertileWindow.end)) {
     return "fertile";
   }

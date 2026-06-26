@@ -82,7 +82,7 @@ export default async function DashboardPage({
         <CycleOverview stats={stats} />
       </section>
 
-      {stats.gvWindow && (
+      {(stats.fertileWindow || stats.gvWindow) && (
         <section className="mt-4">
           <GvWindow stats={stats} />
         </section>
