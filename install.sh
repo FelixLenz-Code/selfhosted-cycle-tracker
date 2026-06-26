@@ -60,11 +60,21 @@ compose_up() {
   if [ "${CYCLE_BUILD:-0}" = 1 ]; then
     info "CYCLE_BUILD=1 — Image wird lokal gebaut."
     build=1
-  elif compose pull 2>/dev/null; then
-    ok "Vorgebautes Image geladen — kein lokaler Build nötig."
   else
-    warn "Kein passendes Image verfügbar (oder offline) — baue lokal; das kann einige Minuten dauern."
-    build=1
+    # Fortschritt NICHT unterdrücken: sonst sieht der Download wie ein Hänger aus,
+    # und ein versehentlicher Abbruch würde unbemerkt in den lokalen Build fallen.
+    info "Lade vorgebautes Image (Tag ${B}${IMAGE_TAG:-latest}${N}) … (erster Download kann ein paar Minuten dauern)"
+    if compose pull; then
+      ok "Vorgebautes Image geladen — kein lokaler Build nötig."
+    else
+      local rc=$?
+      # 128+N = durch Signal beendet (z. B. Strg-C). Dann NICHT lokal bauen.
+      if [ "$rc" -ge 128 ]; then
+        die "Abgebrochen ($rc). Einfach erneut ausführen — oder mit ${B}CYCLE_BUILD=1${N} bewusst lokal bauen."
+      fi
+      warn "Image konnte nicht geladen werden (Code $rc) — baue lokal; das kann einige Minuten dauern."
+      build=1
+    fi
   fi
   local extra=""
   [ "$build" = 1 ] && extra="--build"
