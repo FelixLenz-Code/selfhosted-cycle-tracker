@@ -1,17 +1,19 @@
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/dal";
 import { LogoutButton } from "./logout-button";
 
-type Page = "dashboard" | "calendar" | "medications" | "partners" | "settings";
+type Page = "dashboard" | "calendar" | "medications" | "partners" | "settings" | "admin";
 
-const links: { href: string; label: string; key: Page }[] = [
+const links: { href: string; label: string; key: Page; adminOnly?: boolean }[] = [
   { href: "/dashboard", label: "Übersicht", key: "dashboard" },
   { href: "/calendar", label: "Kalender", key: "calendar" },
   { href: "/medications", label: "Medikamente", key: "medications" },
   { href: "/partners", label: "Partner", key: "partners" },
   { href: "/settings", label: "Einstellungen", key: "settings" },
+  { href: "/admin", label: "Admin", key: "admin", adminOnly: true },
 ];
 
-export function AppShell({
+export async function AppShell({
   active,
   userName,
   children,
@@ -20,6 +22,8 @@ export function AppShell({
   userName: string;
   children: React.ReactNode;
 }) {
+  const user = await getCurrentUser();
+  const visibleLinks = links.filter((l) => !l.adminOnly || user?.isAdmin);
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-black/10 dark:border-white/15 bg-white/80 dark:bg-black/70 backdrop-blur">
@@ -36,7 +40,7 @@ export function AppShell({
             </div>
           </div>
           <nav className="no-scrollbar flex gap-1 overflow-x-auto pb-2">
-            {links.map((l) => (
+            {visibleLinks.map((l) => (
               <Link
                 key={l.key}
                 href={l.href}

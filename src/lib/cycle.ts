@@ -155,6 +155,12 @@ export function computeCycleStats(
   };
 }
 
+// Liegt ein Tag im konfigurierten GV-/Spaß-Fenster? (überlagert die Tagesklasse,
+// da es sich z. B. mit dem fruchtbaren Fenster überschneiden kann.)
+export function isInGvWindow(iso: string, stats: CycleStats): boolean {
+  return Boolean(stats.gvWindow && isWithin(iso, stats.gvWindow.start, stats.gvWindow.end));
+}
+
 // Klassifizierung eines Tages für die Kalenderansicht
 export type DayKind = "period" | "predicted-period" | "fertile" | "ovulation" | "none";
 

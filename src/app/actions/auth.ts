@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/db";
 import { users, cycleSettings } from "@/db/schema";
 import { createSession, deleteSession } from "@/lib/session";
+import { isRegistrationEnabled } from "@/lib/app-settings";
 import { signupSchema, loginSchema } from "@/lib/validation";
 import {
   getClientIp,
@@ -44,6 +45,14 @@ export async function signup(
 
   const { displayName, email, password, tracksCycle } = parsed.data;
 
+  // Der allererste Nutzer einer Instanz wird Admin und darf sich immer anlegen.
+  // Danach gilt der vom Admin schaltbare Registrierungs-Schalter.
+  const anyUser = await db.select({ id: users.id }).from(users).limit(1);
+  const isFirstUser = anyUser.length === 0;
+  if (!isFirstUser && !(await isRegistrationEnabled())) {
+    return { error: "Die Registrierung ist derzeit deaktiviert." };
+  }
+
   // Registrierung pro IP begrenzen (Schutz vor Massen-Anlage)
   const ipKey = [`signup:ip:${await getClientIp()}`];
   if (await isRateLimited(ipKey)) {
@@ -66,7 +75,7 @@ export async function signup(
 
   const inserted = await db
     .insert(users)
-    .values({ email, passwordHash, displayName, tracksCycle })
+    .values({ email, passwordHash, displayName, tracksCycle, isAdmin: isFirstUser })
     .returning({ id: users.id });
 
   const userId = inserted[0].id;

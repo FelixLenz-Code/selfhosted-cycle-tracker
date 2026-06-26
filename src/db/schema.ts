@@ -41,9 +41,18 @@ export const users = pgTable("users", {
   displayName: text("display_name").notNull(),
   // true = trackt eigenen Zyklus (menstruiert); false = begleitet jemanden (z. B. Partner)
   tracksCycle: boolean("tracks_cycle").notNull().default(true),
+  // Admins verwalten Nutzer und die globale Registrierung.
+  isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
+});
+
+// --- Globale App-Einstellungen (genau eine Zeile, id immer "global") ---
+export const appSettings = pgTable("app_settings", {
+  id: text("id").primaryKey().default("global"),
+  // Steuert, ob sich neue Nutzer registrieren dürfen (vom Admin schaltbar).
+  registrationEnabled: boolean("registration_enabled").notNull().default(true),
 });
 
 // --- Rate-Limiting (Login/Registrierung), Fixed-Window-Zähler je Schlüssel ---

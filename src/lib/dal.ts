@@ -11,6 +11,7 @@ export type CurrentUser = {
   email: string;
   displayName: string;
   tracksCycle: boolean;
+  isAdmin: boolean;
 };
 
 // Innerhalb eines Renderdurchlaufs memoisiert (React cache).
@@ -24,6 +25,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       email: users.email,
       displayName: users.displayName,
       tracksCycle: users.tracksCycle,
+      isAdmin: users.isAdmin,
     })
     .from(users)
     .where(eq(users.id, userId))
@@ -35,5 +37,12 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  return user;
+}
+
+// Für Admin-Bereiche/-Actions: erzwingt eine angemeldete Admin-Sitzung.
+export async function requireAdmin(): Promise<CurrentUser> {
+  const user = await requireUser();
+  if (!user.isAdmin) redirect("/dashboard");
   return user;
 }

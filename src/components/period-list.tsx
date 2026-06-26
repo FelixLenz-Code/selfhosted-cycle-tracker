@@ -1,4 +1,5 @@
 import { endPeriod, deletePeriod } from "@/app/actions/periods";
+import { ConfirmSubmit } from "./confirm-submit";
 import { formatGermanDate } from "@/lib/format";
 import { diffDays } from "@/lib/cycle";
 import type { PeriodEntryLite } from "@/lib/cycle";
@@ -77,17 +78,15 @@ export function PeriodList({
                     </button>
                   </form>
                 )}
-                <form action={deletePeriod}>
-                  <input type="hidden" name="id" value={e.id} />
-                  <input type="hidden" name="ownerId" value={ownerId} />
-                  <button
-                    type="submit"
-                    aria-label="Eintrag löschen"
-                    className="rounded-md px-2 py-1 text-xs text-black/40 hover:bg-red-500/10 hover:text-red-600 dark:text-white/40"
-                  >
-                    ✕
-                  </button>
-                </form>
+                <ConfirmSubmit
+                  action={deletePeriod}
+                  hidden={{ id: e.id, ownerId }}
+                  label="✕"
+                  confirmLabel="Wirklich löschen?"
+                  idleAriaLabel="Eintrag löschen"
+                  idleClassName="rounded-md px-2 py-1 text-xs text-black/40 hover:bg-red-500/10 hover:text-red-600 dark:text-white/40"
+                  confirmClassName="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
+                />
               </div>
             )}
           </li>
