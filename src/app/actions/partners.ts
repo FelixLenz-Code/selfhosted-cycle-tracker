@@ -139,6 +139,8 @@ export async function revokeLink(formData: FormData): Promise<void> {
 // meine Entscheidung -> direkt aktiv, nur Ansicht; Bearbeiten kann ich danach erlauben).
 export async function reciprocateLink(formData: FormData): Promise<void> {
   const user = await requireUser();
+  // Wer keinen eigenen Zyklus trackt, hat keine Daten zum Gegen-Freigeben.
+  if (!user.tracksCycle) return;
   const targetId = String(formData.get("ownerId") ?? "");
   if (!isUuid(targetId) || targetId === user.id) return;
 

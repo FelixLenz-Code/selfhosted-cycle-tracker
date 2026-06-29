@@ -88,7 +88,7 @@ export default async function PartnersPage() {
                     {sharedWith.has(o.ownerId) ? " · gegenseitig" : ""}
                   </div>
                 </div>
-                {!sharedWith.has(o.ownerId) && (
+                {user.tracksCycle && !sharedWith.has(o.ownerId) && (
                   <form action={reciprocateLink}>
                     <input type="hidden" name="ownerId" value={o.ownerId} />
                     <button
