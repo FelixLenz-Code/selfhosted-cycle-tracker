@@ -16,6 +16,8 @@ Medikamenten-Erinnerungen und Push-Benachrichtigungen.
 - Medikamenten-Erinnerungen (feste Uhrzeiten oder zyklusabhängig) als Push.
 - Konfigurierbares „GV-Fenster" (Modus Kinderwunsch oder Vermeidung) als Push.
 - Installierbare PWA mit Web-Push-Benachrichtigungen.
+- Admin-Backup: vollständiges Instanz-Backup als JSON herunterladen und wieder
+  einspielen – direkt im Browser, auch für den Umzug auf einen anderen Server.
 
 Details und Roadmap: siehe [PLAN.md](./PLAN.md).
 
@@ -88,6 +90,44 @@ docker compose up -d          # zieht das Image (GHCR) oder baut lokal
 VAPID-Keys erzeugen: `npx web-push generate-vapid-keys`.
 
 ### Backup & Restore
+
+Es gibt zwei Wege. Für den normalen Gebrauch und für einen **Server-Umzug** ist
+das Admin-Backup am einfachsten; `pg_dump` bleibt als datenbanknahe Alternative.
+
+#### Admin-Backup (im Browser)
+
+Als Admin unter **`/admin` → „Backup & Wiederherstellung"**:
+
+- **Backup herunterladen** – schreibt den **gesamten** Datenbestand der Instanz
+  (alle Nutzer, Zyklen, Medikamente, Einstellungen) in eine JSON-Datei.
+- **Wiederherstellen** – ersetzt nach Bestätigung **alle** aktuellen Daten durch
+  den Inhalt einer hochgeladenen Backup-Datei (in einer Transaktion, also ganz
+  oder gar nicht). Im Anschluss musst du dich neu anmelden.
+
+> ⚠️ Die JSON-Datei enthält **Passwort-Hashes und Push-Keys** – wie ein DB-Dump
+> sensibel, entsprechend sicher aufbewahren.
+
+**Umzug auf einen anderen Server:**
+
+1. Zielserver mit **demselben App-Stand** aufsetzen (Migrationen anwenden, s. u.).
+2. Erstes Konto registrieren – der erste Nutzer einer frischen Instanz wird Admin
+   und dient nur als „Türöffner".
+3. Unter `/admin` das Backup hochladen und wiederherstellen.
+4. Mit den Zugangsdaten **aus dem Backup** neu anmelden.
+
+Original-IDs bleiben erhalten, daher passen Partner-Verknüpfungen, Perioden,
+Medikamente usw. weiterhin zusammen. Wichtig:
+
+- **Gleicher Migrationsstand** auf dem Ziel (das Backup enthält nur Daten, kein
+  Schema). Mit identischem App-Stand und `npm run db:migrate` ist das gegeben.
+- **Gleiche VAPID-Keys** (`.env`), sonst werden wiederhergestellte Push-Abos
+  ungültig und Nutzer müssen Benachrichtigungen neu aktivieren.
+- Der **Worker** muss auf dem Zielserver laufen, damit Erinnerungen versendet werden.
+
+Es ist ein Voll-Ersatz, kein Merge: Die Ziel-Daten werden komplett überschrieben –
+ideal zum Klonen/Umziehen, nicht zum Zusammenführen zweier Instanzen.
+
+#### Per `pg_dump` (datenbanknah)
 
 ```bash
 # Backup (Datenbank)

@@ -4,6 +4,7 @@ import { isRegistrationEnabled } from "@/lib/app-settings";
 import { setRegistration } from "@/app/actions/admin";
 import { AppShell } from "@/components/app-shell";
 import { AdminUserItem } from "@/components/admin-user-item";
+import { AdminBackup } from "@/components/admin-backup";
 
 export default async function AdminPage() {
   const admin = await requireAdmin();
@@ -59,6 +60,8 @@ export default async function AdminPage() {
           ))}
         </ul>
       </section>
+
+      <AdminBackup />
     </AppShell>
   );
 }
