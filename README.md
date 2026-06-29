@@ -49,9 +49,24 @@ curl -fsSL https://raw.githubusercontent.com/FelixLenz-Code/selfhosted-cycle-tra
 ./install.sh update            # --keep | --fresh | --force | --yes
 ```
 
+**Bestimmte Version installieren** – standardmäßig wird das neueste Release
+genutzt. Mit `CYCLE_REF` lässt sich gezielt ein Release-Tag (oder Branch/Commit)
+wählen; das gilt für Installation und Update gleichermaßen:
+
+```bash
+# Neuinstallation einer bestimmten Version
+curl -fsSL https://raw.githubusercontent.com/FelixLenz-Code/selfhosted-cycle-tracker/main/install.sh | CYCLE_REF=v1.6.0 bash
+
+# Bestehende Installation auf eine bestimmte Version setzen (z. B. Downgrade)
+CYCLE_REF=v1.5.3 ./install.sh update
+```
+
+Verfügbare Versionen: siehe
+[Releases](https://github.com/FelixLenz-Code/selfhosted-cycle-tracker/releases).
+
 Weitere Befehle: `./install.sh status` · `logs` · `uninstall [--purge]`.
-Wichtige Env-Variablen: `CYCLE_PORT`, `CYCLE_TZ`, `COOKIE_SECURE`, `VAPID_SUBJECT`
-(siehe Kommentare in `install.sh`).
+Wichtige Env-Variablen: `CYCLE_PORT`, `CYCLE_TZ`, `COOKIE_SECURE`, `VAPID_SUBJECT`,
+`CYCLE_REF` (siehe Kommentare in `install.sh`).
 
 > Hinter HTTPS: in `.env` `COOKIE_SECURE=true` setzen und `./install.sh update`.
 > Ohne HTTPS bleibt es `false`, sonst funktioniert der Login nicht.

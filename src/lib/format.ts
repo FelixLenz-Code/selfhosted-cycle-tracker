@@ -10,6 +10,18 @@ export function formatGermanDate(iso: string): string {
   });
 }
 
+// Kurzer Wochentag ohne abschließenden Punkt: "Mo", "Di", … "So".
+export function formatGermanWeekday(iso: string): string {
+  return new Date(`${iso}T00:00:00Z`)
+    .toLocaleDateString("de-DE", { weekday: "short", timeZone: "UTC" })
+    .replace(/\.$/, "");
+}
+
+// Wochentag + Datum, z. B. "Mo, 01.03.2026".
+export function formatGermanDateWithWeekday(iso: string): string {
+  return `${formatGermanWeekday(iso)}, ${formatGermanDate(iso)}`;
+}
+
 export function formatGermanShort(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString("de-DE", {
     day: "2-digit",

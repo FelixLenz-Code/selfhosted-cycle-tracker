@@ -1,6 +1,7 @@
 import { endPeriod, deletePeriod } from "@/app/actions/periods";
 import { ConfirmSubmit } from "./confirm-submit";
-import { formatGermanDate } from "@/lib/format";
+import { PeriodEdit } from "./period-edit";
+import { formatGermanDateWithWeekday } from "@/lib/format";
 import { diffDays } from "@/lib/cycle";
 import type { PeriodEntryLite } from "@/lib/cycle";
 
@@ -42,11 +43,11 @@ export function PeriodList({
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-x-2 text-sm">
-                <span className="font-medium">{formatGermanDate(e.startDate)}</span>
+                <span className="font-medium">{formatGermanDateWithWeekday(e.startDate)}</span>
                 {e.endDate && (
                   <>
                     <span className="text-black/30 dark:text-white/30">→</span>
-                    <span className="font-medium">{formatGermanDate(e.endDate)}</span>
+                    <span className="font-medium">{formatGermanDateWithWeekday(e.endDate)}</span>
                   </>
                 )}
               </div>
@@ -78,6 +79,11 @@ export function PeriodList({
                     </button>
                   </form>
                 )}
+                <PeriodEdit
+                  entry={{ id: e.id, startDate: e.startDate, endDate: e.endDate }}
+                  ownerId={ownerId}
+                  today={today}
+                />
                 <ConfirmSubmit
                   action={deletePeriod}
                   hidden={{ id: e.id, ownerId }}

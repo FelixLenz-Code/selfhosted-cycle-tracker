@@ -10,7 +10,7 @@ import { canEditOwner } from "@/lib/access";
 import { isUuid } from "@/lib/ids";
 import { todayISO, diffDays } from "@/lib/cycle";
 
-export type PeriodFormState = { error?: string } | undefined;
+export type PeriodFormState = { error?: string; ok?: boolean } | undefined;
 
 const isoDate = z
   .string()
@@ -74,6 +74,43 @@ export async function addPeriod(
 
   refreshViews();
   return undefined;
+}
+
+export async function editPeriod(
+  _prev: PeriodFormState,
+  formData: FormData,
+): Promise<PeriodFormState> {
+  const user = await requireUser();
+  const ownerId = ownerIdFrom(formData, user.id);
+  const id = String(formData.get("id") ?? "");
+  if (!isUuid(id)) return { error: "Ungültiger Eintrag." };
+
+  if (!(await canEditOwner(user.id, ownerId))) {
+    return { error: "Keine Berechtigung zum Bearbeiten." };
+  }
+
+  const parsed = addPeriodSchema.safeParse({
+    startDate: formData.get("startDate"),
+    endDate: formData.get("endDate") ?? "",
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };
+  }
+
+  const { startDate } = parsed.data;
+  const endDate = parsed.data.endDate ? parsed.data.endDate : null;
+
+  if (diffDays(startDate, todayISO()) > 0) {
+    return { error: "Das Startdatum darf nicht in der Zukunft liegen." };
+  }
+
+  await db
+    .update(periodEntries)
+    .set({ startDate, endDate })
+    .where(and(eq(periodEntries.id, id), eq(periodEntries.ownerId, ownerId)));
+
+  refreshViews();
+  return { ok: true };
 }
 
 export async function endPeriod(formData: FormData): Promise<void> {
