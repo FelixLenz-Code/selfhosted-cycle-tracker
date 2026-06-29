@@ -99,7 +99,7 @@ export function CycleCalendar({
               {inGv && (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute left-0.5 top-0 text-xl leading-none text-violet-600 drop-shadow-sm dark:text-violet-300 sm:text-2xl"
+                  className="pointer-events-none absolute left-0.5 top-0 text-lg leading-none text-violet-600 drop-shadow-sm dark:text-violet-300 sm:text-xl"
                 >
                   {GV_SYMBOL}
                 </span>

@@ -14,18 +14,8 @@ function Card({
 }) {
   return (
     <div
-      className={`surface-card relative overflow-hidden p-4 ${
-        accent
-          ? "ring-1 ring-violet-500/30"
-          : ""
-      }`}
+      className={`surface-card p-4 ${accent ? "ring-1 ring-violet-500/30" : ""}`}
     >
-      {accent && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 blur-xl"
-        />
-      )}
       <div className="text-xs font-medium uppercase tracking-wide text-black/50 dark:text-white/50">
         {label}
       </div>

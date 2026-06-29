@@ -94,13 +94,13 @@ body {
   font-size: 0.875rem;
   font-weight: 600;
   color: #fff;
-  background-image: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  box-shadow: var(--shadow-sm), 0 8px 20px -10px var(--accent);
-  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  /* Solides Violett-600 – in Light & Dark identisch (wie der Admin-Button). */
+  background-color: #7c3aed;
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.12s ease, transform 0.12s ease;
 }
 .btn-primary:hover {
-  filter: brightness(1.06);
-  box-shadow: var(--shadow-md), 0 10px 24px -10px var(--accent);
+  background-color: #6d28d9; /* violet-700 */
 }
 .btn-primary:active {
   transform: translateY(1px);
