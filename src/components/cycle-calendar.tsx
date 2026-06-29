@@ -69,7 +69,7 @@ export function CycleCalendar({
           </div>
         ))}
       </div>
-      <div className="mt-1.5 grid grid-cols-7 gap-1.5">
+      <div className="mt-1.5 grid grid-cols-7 gap-1 sm:gap-1.5">
         {cells.map((cell, i) => {
           if (!cell) return <div key={`b${i}`} />;
           const kind = classifyDay(cell.iso, entries, stats);
@@ -99,7 +99,7 @@ export function CycleCalendar({
               {symbol && (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute left-1 top-0.5 text-lg font-bold leading-none drop-shadow-sm"
+                  className="pointer-events-none absolute left-0.5 top-0 text-lg font-bold leading-none drop-shadow-sm sm:text-xl"
                 >
                   {symbol}
                 </span>
@@ -107,12 +107,12 @@ export function CycleCalendar({
               {inGv && (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute bottom-0.5 right-1 text-lg leading-none text-violet-600 drop-shadow-sm dark:text-violet-300"
+                  className="pointer-events-none absolute right-0.5 top-0 text-xl leading-none text-violet-600 drop-shadow-sm dark:text-violet-300 sm:text-2xl"
                 >
                   {GV_SYMBOL}
                 </span>
               )}
-              {cell.day}
+              <span className="mt-1.5 leading-none sm:mt-2">{cell.day}</span>
             </div>
           );
         })}

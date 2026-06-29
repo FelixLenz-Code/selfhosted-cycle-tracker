@@ -22,6 +22,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover", // Inhalt bis unter Notch/Home-Indicator; Safe-Area per CSS env()
   themeColor: "#7c3aed",
 };
 
