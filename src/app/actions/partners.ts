@@ -21,6 +21,11 @@ export async function invitePartner(
 ): Promise<InviteState> {
   const user = await requireUser();
 
+  // Wer keinen eigenen Zyklus trackt, hat keine Daten zum Freigeben.
+  if (!user.tracksCycle) {
+    return { error: "Du trackst keinen eigenen Zyklus, daher gibt es nichts freizugeben." };
+  }
+
   const parsed = inviteSchema.safeParse({
     email: formData.get("email"),
     canEdit: formData.get("canEdit") === "on" || formData.get("canEdit") === "true",

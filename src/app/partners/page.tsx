@@ -28,12 +28,16 @@ export default async function PartnersPage() {
     outgoing.filter((o) => o.status !== "revoked" && o.partnerId).map((o) => o.partnerId),
   );
 
+  // Nur wer einen eigenen Zyklus trackt, hat überhaupt Daten zum Freigeben.
+  const canShare = user.tracksCycle;
+
   return (
     <AppShell active="partners" userName={user.displayName}>
       <h1 className="text-2xl font-semibold">Partner</h1>
       <p className="mt-1 text-sm text-black/60 dark:text-white/60">
-        Lade deinen Partner ein, deine Zyklusdaten anzusehen – und optional auch zu
-        bearbeiten.
+        {canShare
+          ? "Lade deinen Partner ein, deine Zyklusdaten anzusehen – und optional auch zu bearbeiten."
+          : "Hier siehst du Einladungen und die Zyklen, die mit dir geteilt wurden."}
       </p>
 
       {incoming.length > 0 && (
@@ -105,13 +109,16 @@ export default async function PartnersPage() {
         </section>
       )}
 
-      <section className="surface-card mt-8 p-5">
-        <h2 className="text-lg font-medium">Partner einladen</h2>
-        <div className="mt-3">
-          <InviteForm />
-        </div>
-      </section>
+      {canShare && (
+        <section className="surface-card mt-8 p-5">
+          <h2 className="text-lg font-medium">Partner einladen</h2>
+          <div className="mt-3">
+            <InviteForm />
+          </div>
+        </section>
+      )}
 
+      {canShare && (
       <section className="mt-8">
         <h2 className="text-lg font-medium">Deine Freigaben</h2>
         {outgoing.length === 0 ? (
@@ -163,6 +170,7 @@ export default async function PartnersPage() {
           </ul>
         )}
       </section>
+      )}
     </AppShell>
   );
 }
