@@ -13,6 +13,7 @@ export function ConfirmSubmit({
   idleClassName,
   confirmClassName,
   idleAriaLabel,
+  confirmAriaLabel = "Löschen bestätigen",
 }: {
   action: (formData: FormData) => void | Promise<void>;
   hidden: Record<string, string>;
@@ -21,6 +22,7 @@ export function ConfirmSubmit({
   idleClassName?: string;
   confirmClassName?: string;
   idleAriaLabel?: string;
+  confirmAriaLabel?: string;
 }) {
   const [armed, setArmed] = useState(false);
 
@@ -31,7 +33,7 @@ export function ConfirmSubmit({
       ))}
       <button
         type="submit"
-        aria-label={armed ? "Löschen bestätigen" : idleAriaLabel}
+        aria-label={armed ? confirmAriaLabel : idleAriaLabel}
         onClick={(e) => {
           if (!armed) {
             e.preventDefault();

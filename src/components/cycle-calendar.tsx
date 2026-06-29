@@ -96,20 +96,20 @@ export function CycleCalendar({
                 isToday ? "ring-2 ring-offset-2 ring-offset-[var(--surface)] ring-violet-500 dark:ring-violet-400" : ""
               }`}
             >
-              {symbol && (
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute left-0.5 top-0 text-lg font-bold leading-none drop-shadow-sm sm:text-xl"
-                >
-                  {symbol}
-                </span>
-              )}
               {inGv && (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute right-0.5 top-0 text-xl leading-none text-violet-600 drop-shadow-sm dark:text-violet-300 sm:text-2xl"
+                  className="pointer-events-none absolute left-0.5 top-0 text-xl leading-none text-violet-600 drop-shadow-sm dark:text-violet-300 sm:text-2xl"
                 >
                   {GV_SYMBOL}
+                </span>
+              )}
+              {symbol && (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute right-0.5 top-0 text-lg font-bold leading-none drop-shadow-sm sm:text-xl"
+                >
+                  {symbol}
                 </span>
               )}
               <span className="mt-1.5 leading-none sm:mt-2">{cell.day}</span>

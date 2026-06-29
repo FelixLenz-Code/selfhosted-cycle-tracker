@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/dal";
 import { LogoutButton } from "./logout-button";
+import { Logo } from "./logo";
 
 type Page = "dashboard" | "calendar" | "medications" | "partners" | "settings" | "admin";
 
@@ -94,9 +95,7 @@ export async function AppShell({
               href="/dashboard"
               className="flex items-center gap-2 font-semibold tracking-tight"
             >
-              <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-600 text-sm text-white shadow-sm shadow-violet-500/30">
-                ♥
-              </span>
+              <Logo className="h-7 w-7 rounded-lg shadow-sm shadow-violet-500/30" />
               <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent dark:from-violet-300 dark:to-fuchsia-300">
                 Zyklus
               </span>
