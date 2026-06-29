@@ -12,7 +12,7 @@ export default async function SettingsPage() {
       <h1 className="text-2xl font-semibold">Einstellungen</h1>
 
       {user.tracksCycle && (
-        <section className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-5">
+        <section className="surface-card mt-6 p-5">
           <h2 className="text-lg font-medium">Hinweis-Fenster &amp; Zyklus</h2>
           <p className="mt-1 mb-4 text-sm text-black/60 dark:text-white/60">
             Lege fest, ob du Hinweise zur fruchtbaren Zeit (Kinderwunsch) oder zur
@@ -22,7 +22,7 @@ export default async function SettingsPage() {
         </section>
       )}
 
-      <section className="mt-8 rounded-xl border border-black/10 dark:border-white/15 p-5">
+      <section className="surface-card mt-8 p-5">
         <h2 className="text-lg font-medium">Push-Benachrichtigungen</h2>
         <p className="mt-1 mb-4 text-sm text-black/60 dark:text-white/60">
           Aktiviere Benachrichtigungen auf diesem Gerät (für Medikamenten- und

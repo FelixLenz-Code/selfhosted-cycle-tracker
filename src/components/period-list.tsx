@@ -24,7 +24,7 @@ export function PeriodList({
   }
 
   return (
-    <ul className="overflow-hidden rounded-xl border border-black/10 dark:border-white/15 divide-y divide-black/5 dark:divide-white/10">
+    <ul className="surface-card overflow-hidden divide-y divide-black/5 dark:divide-white/10">
       {entries.map((e) => {
         const ongoing = e.endDate === null;
         const days = e.endDate !== null ? diffDays(e.endDate, e.startDate) + 1 : null;

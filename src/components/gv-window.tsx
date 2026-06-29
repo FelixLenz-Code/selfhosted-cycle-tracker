@@ -24,12 +24,12 @@ export function GvWindow({ stats }: { stats: CycleStats }) {
 
   return (
     <div
-      className={`rounded-xl border p-4 ${
+      className={`surface-card p-4 ${
         inWindow
           ? isTtc
-            ? "border-green-500/50 bg-green-500/10"
-            : "border-violet-500/50 bg-violet-500/10"
-          : "border-black/10 dark:border-white/15"
+            ? "ring-1 ring-green-500/50 bg-green-500/10"
+            : "ring-1 ring-violet-500/50 bg-violet-500/10"
+          : ""
       }`}
     >
       <div className="flex items-center justify-between gap-3">

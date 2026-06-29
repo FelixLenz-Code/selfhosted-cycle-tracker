@@ -32,15 +32,12 @@ export default async function DashboardPage({
     return (
       <AppShell active="dashboard" userName={user.displayName}>
         <h1 className="text-2xl font-semibold">Hallo, {user.displayName}</h1>
-        <div className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-6 text-sm text-black/70 dark:text-white/70">
+        <div className="surface-card mt-6 p-6 text-sm text-black/70 dark:text-white/70">
           <p>
             Du trackst keinen eigenen Zyklus. Sobald dich die Person, die du
             begleitest, freigibt, siehst du hier ihre Daten.
           </p>
-          <Link
-            href="/partners"
-            className="mt-4 inline-block rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700"
-          >
+          <Link href="/partners" className="btn-primary mt-4">
             Zu „Partner"
           </Link>
         </div>
@@ -72,7 +69,7 @@ export default async function DashboardPage({
       />
 
       {!access.isSelf && (
-        <p className="mt-3 rounded-md bg-black/5 dark:bg-white/10 px-3 py-2 text-sm">
+        <p className="mt-3 rounded-lg bg-black/5 dark:bg-white/10 px-3 py-2 text-sm">
           Du siehst die freigegebenen Daten von <strong>{access.ownerName}</strong>
           {access.canEdit ? " und darfst Einträge bearbeiten." : " (nur lesend)."}
         </p>
@@ -89,8 +86,8 @@ export default async function DashboardPage({
       )}
 
       {access.canEdit && (
-        <section className="mt-8 rounded-xl border border-black/10 dark:border-white/15 p-5">
-          <h2 className="text-lg font-medium">Blutung eintragen</h2>
+        <section className="surface-card mt-8 p-5">
+          <h2 className="text-lg font-semibold">Blutung eintragen</h2>
           <div className="mt-3">
             <PeriodForm today={today} ownerId={access.ownerId} />
           </div>
@@ -98,7 +95,7 @@ export default async function DashboardPage({
       )}
 
       <section className="mt-8">
-        <h2 className="text-lg font-medium">Verlauf</h2>
+        <h2 className="text-lg font-semibold">Verlauf</h2>
         <div className="mt-2">
           <PeriodList
             entries={entries}

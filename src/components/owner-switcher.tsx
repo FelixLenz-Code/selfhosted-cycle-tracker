@@ -36,10 +36,10 @@ export function OwnerSwitcher({
           <Link
             key={t.ownerId}
             href={href}
-            className={`rounded-full px-3 py-1 text-sm ${
+            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
               isActive
-                ? "bg-black text-white dark:bg-white dark:text-black"
-                : "border border-black/15 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/10"
+                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-violet-500/30"
+                : "border border-[var(--border-strong)] hover:bg-black/5 dark:hover:bg-white/10"
             }`}
           >
             {t.ownerName}

@@ -17,7 +17,7 @@ export default async function AdminPage() {
     <AppShell active="admin" userName={admin.displayName}>
       <h1 className="text-2xl font-semibold">Administration</h1>
 
-      <section className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-5">
+      <section className="surface-card mt-6 p-5">
         <h2 className="text-lg font-medium">Registrierung</h2>
         <p className="mt-1 text-sm text-black/60 dark:text-white/60">
           {registrationEnabled
@@ -41,7 +41,7 @@ export default async function AdminPage() {
 
       <section className="mt-8">
         <h2 className="text-lg font-medium">Benutzer ({usersList.length})</h2>
-        <ul className="mt-3 overflow-hidden rounded-xl border border-black/10 dark:border-white/15 divide-y divide-black/5 dark:divide-white/10">
+        <ul className="mt-3 surface-card overflow-hidden divide-y divide-black/5 dark:divide-white/10">
           {usersList.map((u) => (
             <AdminUserItem
               key={u.id}

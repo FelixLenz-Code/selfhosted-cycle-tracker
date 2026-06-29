@@ -14,17 +14,23 @@ function Card({
 }) {
   return (
     <div
-      className={`rounded-xl border p-4 ${
+      className={`surface-card relative overflow-hidden p-4 ${
         accent
-          ? "border-violet-500/40 bg-violet-500/5"
-          : "border-black/10 dark:border-white/15"
+          ? "ring-1 ring-violet-500/30"
+          : ""
       }`}
     >
-      <div className="text-xs uppercase tracking-wide text-black/50 dark:text-white/50">
+      {accent && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 blur-xl"
+        />
+      )}
+      <div className="text-xs font-medium uppercase tracking-wide text-black/50 dark:text-white/50">
         {label}
       </div>
-      <div className="mt-1 text-xl font-semibold">{value}</div>
-      {hint && <div className="mt-0.5 text-xs text-black/50 dark:text-white/50">{hint}</div>}
+      <div className="mt-1.5 text-2xl font-bold tracking-tight">{value}</div>
+      {hint && <div className="mt-1 text-xs text-black/50 dark:text-white/50">{hint}</div>}
     </div>
   );
 }
@@ -32,7 +38,7 @@ function Card({
 export function CycleOverview({ stats }: { stats: CycleStats }) {
   if (!stats.lastPeriodStart) {
     return (
-      <div className="rounded-xl border border-black/10 dark:border-white/15 p-4 text-sm text-black/60 dark:text-white/60">
+      <div className="surface-card p-4 text-sm text-black/60 dark:text-white/60">
         Sobald du deine erste Blutung einträgst, erscheinen hier Zyklustag und
         Vorhersagen.
       </div>

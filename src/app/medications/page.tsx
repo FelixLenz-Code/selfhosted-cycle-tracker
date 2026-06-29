@@ -16,7 +16,7 @@ export default async function MedicationsPage() {
         unter „Einstellungen“ – der Hintergrund-Worker schickt die Erinnerungen.
       </p>
 
-      <section className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-5">
+      <section className="surface-card mt-6 p-5">
         <h2 className="text-lg font-medium">Neues Medikament</h2>
         <div className="mt-3">
           <MedicationForm />

@@ -54,7 +54,7 @@ export default async function PartnersPage() {
                     <input type="hidden" name="id" value={inv.id} />
                     <button
                       type="submit"
-                      className="rounded-md bg-violet-600 px-3 py-1 text-sm text-white hover:bg-violet-700"
+                      className="btn-primary"
                     >
                       Annehmen
                     </button>
@@ -105,7 +105,7 @@ export default async function PartnersPage() {
         </section>
       )}
 
-      <section className="mt-8 rounded-xl border border-black/10 dark:border-white/15 p-5">
+      <section className="surface-card mt-8 p-5">
         <h2 className="text-lg font-medium">Partner einladen</h2>
         <div className="mt-3">
           <InviteForm />

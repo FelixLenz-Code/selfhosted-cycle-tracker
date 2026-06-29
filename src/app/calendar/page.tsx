@@ -62,20 +62,20 @@ export default async function CalendarPage({
         <h1 className="text-2xl font-semibold">
           Kalender{access.isSelf ? "" : ` – ${access.ownerName}`}
         </h1>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] p-1 shadow-sm">
           <Link
             href={`/calendar?m=${prev}${ownerQuery}`}
-            className="rounded-md border border-black/15 dark:border-white/20 px-2.5 py-1 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+            className="grid h-8 w-8 place-items-center rounded-full text-lg leading-none hover:bg-black/5 dark:hover:bg-white/10"
             aria-label="Vorheriger Monat"
           >
             ‹
           </Link>
-          <span className="min-w-40 text-center text-sm font-medium">
+          <span className="min-w-36 text-center text-sm font-semibold">
             {formatMonthLabel(monthStart)}
           </span>
           <Link
             href={`/calendar?m=${next}${ownerQuery}`}
-            className="rounded-md border border-black/15 dark:border-white/20 px-2.5 py-1 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+            className="grid h-8 w-8 place-items-center rounded-full text-lg leading-none hover:bg-black/5 dark:hover:bg-white/10"
             aria-label="Nächster Monat"
           >
             ›
@@ -92,7 +92,7 @@ export default async function CalendarPage({
         includeSelf={user.tracksCycle}
       />
 
-      <section className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-4">
+      <section className="surface-card mt-6 p-4 sm:p-5">
         <CycleCalendar monthStart={monthStart} entries={entries} stats={stats} />
       </section>
     </AppShell>

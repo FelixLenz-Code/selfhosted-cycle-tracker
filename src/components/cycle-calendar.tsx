@@ -10,9 +10,11 @@ import {
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
 const KIND_CLASS: Record<Exclude<DayKind, "none">, string> = {
-  period: "bg-rose-600 text-white",
-  "predicted-period": "border border-dashed border-rose-500 text-rose-700 dark:text-rose-300",
-  fertile: "bg-green-500/20 text-green-800 dark:text-green-200",
+  period: "bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm shadow-rose-500/30",
+  "predicted-period":
+    "border-2 border-dashed border-rose-400 text-rose-700 dark:text-rose-300 bg-rose-500/5",
+  fertile:
+    "bg-gradient-to-br from-emerald-400/25 to-green-500/20 text-green-800 dark:text-green-200",
 };
 
 // Farbunabhängige Zweitkennzeichnung (Formen) – für Rot-Grün-Sehschwäche lesbar.
@@ -60,14 +62,14 @@ export function CycleCalendar({
 
   return (
     <div>
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-black/50 dark:text-white/50">
+      <div className="grid grid-cols-7 gap-1.5 text-center text-xs font-semibold uppercase tracking-wide text-black/40 dark:text-white/40">
         {WEEKDAYS.map((w) => (
           <div key={w} className="py-1">
             {w}
           </div>
         ))}
       </div>
-      <div className="mt-1 grid grid-cols-7 gap-1">
+      <div className="mt-1.5 grid grid-cols-7 gap-1.5">
         {cells.map((cell, i) => {
           if (!cell) return <div key={`b${i}`} />;
           const kind = classifyDay(cell.iso, entries, stats);
@@ -79,6 +81,10 @@ export function CycleCalendar({
             ? "outline outline-2 outline-offset-[-2px] outline-violet-500 dark:outline-violet-400"
             : "";
           const isToday = cell.iso === today;
+          const baseClass =
+            kind === "none"
+              ? "bg-black/[0.02] dark:bg-white/[0.04] hover:bg-black/[0.05] dark:hover:bg-white/[0.07]"
+              : "";
           const title = [kind === "none" ? null : KIND_LABEL[kind], inGv ? gvLabel : null]
             .filter(Boolean)
             .join(" · ");
@@ -86,14 +92,14 @@ export function CycleCalendar({
             <div
               key={cell.iso}
               title={title || undefined}
-              className={`relative flex aspect-square items-center justify-center rounded-md text-sm ${kindClass} ${gvClass} ${
-                isToday ? "ring-2 ring-offset-1 ring-black/40 dark:ring-white/60" : ""
+              className={`relative flex aspect-square items-center justify-center rounded-xl text-base font-medium transition-colors ${baseClass} ${kindClass} ${gvClass} ${
+                isToday ? "ring-2 ring-offset-2 ring-offset-[var(--surface)] ring-violet-500 dark:ring-violet-400" : ""
               }`}
             >
               {symbol && (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute left-0.5 top-0.5 text-sm font-semibold leading-none"
+                  className="pointer-events-none absolute left-1 top-0.5 text-lg font-bold leading-none drop-shadow-sm"
                 >
                   {symbol}
                 </span>
@@ -101,7 +107,7 @@ export function CycleCalendar({
               {inGv && (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute right-0.5 bottom-0.5 text-sm leading-none text-violet-600 dark:text-violet-300"
+                  className="pointer-events-none absolute bottom-0.5 right-1 text-lg leading-none text-violet-600 drop-shadow-sm dark:text-violet-300"
                 >
                   {GV_SYMBOL}
                 </span>
@@ -112,7 +118,7 @@ export function CycleCalendar({
         })}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-black/60 dark:text-white/60">
+      <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-black/60 dark:text-white/60">
         <Legend className="bg-rose-600" symbol={KIND_SYMBOL.period} label="Blutung" />
         <Legend
           className="border border-dashed border-rose-500"
@@ -143,9 +149,9 @@ function Legend({
   label: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className={`inline-block h-3 w-3 rounded ${className}`} />
-      <span className={`text-xs leading-none ${symbolClass ?? ""}`} aria-hidden>
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-black/[0.03] px-2.5 py-1 dark:border-white/10 dark:bg-white/[0.05]">
+      <span className={`inline-block h-3.5 w-3.5 rounded-md ${className}`} />
+      <span className={`text-base leading-none ${symbolClass ?? ""}`} aria-hidden>
         {symbol}
       </span>
       {label}

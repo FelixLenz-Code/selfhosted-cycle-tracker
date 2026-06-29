@@ -62,7 +62,7 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60"
+        className="mt-2 btn-primary disabled:opacity-60"
       >
         {pending ? "Wird erstellt …" : "Konto erstellen"}
       </button>
@@ -104,7 +104,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60"
+        className="mt-2 btn-primary disabled:opacity-60"
       >
         {pending ? "Anmelden …" : "Anmelden"}
       </button>

@@ -141,7 +141,7 @@ export function AdminUserItem({
             <button
               type="submit"
               disabled={editPending}
-              className="rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+              className="btn-primary disabled:opacity-50"
             >
               Speichern
             </button>
@@ -174,7 +174,7 @@ export function AdminUserItem({
             <button
               type="submit"
               disabled={pwPending}
-              className="rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+              className="btn-primary disabled:opacity-50"
             >
               Setzen
             </button>
