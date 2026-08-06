@@ -3,24 +3,34 @@ import { getCurrentUser } from "@/lib/dal";
 import { LogoutButton } from "./logout-button";
 import { Logo } from "./logo";
 
-type Page = "dashboard" | "calendar" | "medications" | "partners" | "settings" | "admin";
+type Page =
+  | "dashboard"
+  | "calendar"
+  | "sex"
+  | "medications"
+  | "partners"
+  | "settings"
+  | "admin";
 
 const links: { href: string; label: string; key: Page; adminOnly?: boolean }[] = [
   { href: "/dashboard", label: "Übersicht", key: "dashboard" },
   { href: "/calendar", label: "Kalender", key: "calendar" },
+  { href: "/sex", label: "Sex", key: "sex" },
   { href: "/medications", label: "Medikamente", key: "medications" },
   { href: "/partners", label: "Partner", key: "partners" },
   { href: "/settings", label: "Einstellungen", key: "settings" },
   { href: "/admin", label: "Admin", key: "admin", adminOnly: true },
 ];
 
-// Kurze Labels für die platzsparende mobile Tab-Leiste.
+// Kurze Labels für die platzsparende mobile Tab-Leiste. Müssen kurz bleiben:
+// mit Admin-Zugang stehen sieben Einträge nebeneinander.
 const SHORT_LABEL: Record<Page, string> = {
   dashboard: "Start",
   calendar: "Kalender",
+  sex: "Sex",
   medications: "Medis",
   partners: "Partner",
-  settings: "Einstellungen",
+  settings: "Optionen",
   admin: "Admin",
 };
 
@@ -36,6 +46,11 @@ const ICON_PATHS: Record<Page, React.ReactNode> = {
     <>
       <rect x="3.5" y="4.5" width="17" height="16" rx="2.5" />
       <path d="M3.5 9.5h17M8 3v3M16 3v3" />
+    </>
+  ),
+  sex: (
+    <>
+      <path d="M12 3.5c3.2 2.6 5 5.2 5 7.8a5 5 0 0 1-10 0c0-1.5.7-2.9 1.8-4 .2 1.3.9 2.2 1.8 2.4-.2-2.3.3-4.4 1.4-6.2Z" />
     </>
   ),
   medications: (

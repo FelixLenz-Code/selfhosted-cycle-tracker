@@ -6,6 +6,7 @@ import {
   type CycleStats,
   type PeriodEntryLite,
 } from "@/lib/cycle";
+import { SEX_TYPES, sexTypeMeta, type SexEntry } from "@/lib/sex";
 
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
@@ -42,11 +43,20 @@ export function CycleCalendar({
   monthStart,
   entries,
   stats,
+  sexEntries = [],
 }: {
   monthStart: string; // "YYYY-MM-01"
   entries: PeriodEntryLite[];
   stats: CycleStats;
+  sexEntries?: SexEntry[]; // Einträge des angezeigten Monats
 }) {
+  // Sex-Einträge je Tag: unten im Feld ein Punkt pro Eintrag.
+  const sexByDay = new Map<string, SexEntry[]>();
+  for (const e of sexEntries) {
+    const list = sexByDay.get(e.occurredOn);
+    if (list) list.push(e);
+    else sexByDay.set(e.occurredOn, [e]);
+  }
   const [year, month] = monthStart.split("-").map(Number); // month: 1-12
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const firstWeekdayUTC = new Date(Date.UTC(year, month - 1, 1)).getUTCDay(); // 0=So
@@ -81,11 +91,16 @@ export function CycleCalendar({
             ? "outline outline-2 outline-offset-[-2px] outline-violet-500 dark:outline-violet-400"
             : "";
           const isToday = cell.iso === today;
+          const sexOfDay = sexByDay.get(cell.iso) ?? [];
           const baseClass =
             kind === "none"
               ? "bg-black/[0.02] dark:bg-white/[0.04] hover:bg-black/[0.05] dark:hover:bg-white/[0.07]"
               : "";
-          const title = [kind === "none" ? null : KIND_LABEL[kind], inGv ? gvLabel : null]
+          const title = [
+            kind === "none" ? null : KIND_LABEL[kind],
+            inGv ? gvLabel : null,
+            ...sexOfDay.map((e) => `${e.occurredTime} ${sexTypeMeta(e.type).label}`),
+          ]
             .filter(Boolean)
             .join(" · ");
           return (
@@ -106,6 +121,21 @@ export function CycleCalendar({
                 </span>
               )}
               <span className="mt-2 leading-none sm:mt-2.5">{cell.day}</span>
+              {sexOfDay.length > 0 && (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 bottom-1 flex items-center justify-center gap-0.5"
+                >
+                  {sexOfDay.slice(0, 3).map((e) => (
+                    <span
+                      key={e.id}
+                      className={`h-1.5 w-1.5 rounded-full ring-1 ring-white/70 dark:ring-black/40 ${
+                        sexTypeMeta(e.type).dotClass
+                      }`}
+                    />
+                  ))}
+                </span>
+              )}
             </div>
           );
         })}
@@ -125,6 +155,17 @@ export function CycleCalendar({
           symbolClass="text-violet-600 dark:text-violet-300"
           label={gvLabel}
         />
+        {sexEntries.length > 0 && (
+          <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-black/5 bg-black/[0.03] px-2.5 py-1 dark:border-white/10 dark:bg-white/[0.05]">
+            <span className="text-black/45 dark:text-white/45">Sex:</span>
+            {SEX_TYPES.map((t) => (
+              <span key={t.value} className="inline-flex items-center gap-1">
+                <span className={`h-1.5 w-1.5 rounded-full ${t.dotClass}`} aria-hidden />
+                {t.label}
+              </span>
+            ))}
+          </span>
+        )}
       </div>
     </div>
   );

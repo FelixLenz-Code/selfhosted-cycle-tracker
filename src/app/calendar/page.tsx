@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/dal";
 import { resolveOwnerAccess, getLinkedOwners } from "@/lib/access";
-import { getPeriodEntries, getCycleSettings } from "@/lib/queries";
+import { getPeriodEntries, getCycleSettings, getSexEntriesBetween } from "@/lib/queries";
 import { computeCycleStats, todayISO } from "@/lib/cycle";
 import { formatMonthLabel } from "@/lib/format";
 import { AppShell } from "@/components/app-shell";
@@ -47,9 +47,16 @@ export default async function CalendarPage({
   const monthStart = normalizeMonth(m);
   const ownerQuery = access.isSelf ? "" : `&owner=${access.ownerId}`;
 
-  const [entries, settings] = await Promise.all([
+  // Letzter Tag des angezeigten Monats (Tag 0 des Folgemonats).
+  const [mYear, mMonth] = monthStart.split("-").map(Number);
+  const monthEnd = `${monthStart.slice(0, 7)}-${pad(
+    new Date(Date.UTC(mYear, mMonth, 0)).getUTCDate(),
+  )}`;
+
+  const [entries, settings, sexOfMonth] = await Promise.all([
     getPeriodEntries(access.ownerId),
     getCycleSettings(access.ownerId),
+    getSexEntriesBetween(access.ownerId, monthStart, monthEnd),
   ]);
   const stats = computeCycleStats(entries, settings, todayISO());
 
@@ -93,7 +100,12 @@ export default async function CalendarPage({
       />
 
       <section className="surface-card mt-6 p-4 sm:p-5">
-        <CycleCalendar monthStart={monthStart} entries={entries} stats={stats} />
+        <CycleCalendar
+          monthStart={monthStart}
+          entries={entries}
+          stats={stats}
+          sexEntries={sexOfMonth}
+        />
       </section>
     </AppShell>
   );

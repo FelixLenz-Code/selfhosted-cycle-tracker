@@ -27,6 +27,8 @@ export const medScheduleType = pgEnum("med_schedule_type", [
   "fixed_time",
   "cycle_relative",
 ]);
+// Art des Sex-Eintrags: GV, Handarbeit, Vibrator/Toy
+export const sexType = pgEnum("sex_type", ["intercourse", "manual", "toy"]);
 export const notificationStatus = pgEnum("notification_status", [
   "pending",
   "sent",
@@ -108,6 +110,25 @@ export const periodEntries = pgTable("period_entries", {
     .notNull()
     .references(() => users.id),
   note: text("note"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+// --- Sex-Einträge (Tag + Uhrzeit + Art) ---
+// Wall-Clock-Werte: Datum und Uhrzeit werden genau so gespeichert, wie sie
+// eingetragen wurden (kein Zeitzonen-Umrechnen wie bei Zeitstempeln).
+export const sexEntries = pgTable("sex_entries", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  ownerId: uuid("owner_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  occurredOn: date("occurred_on").notNull(),
+  occurredTime: time("occurred_time").notNull(),
+  type: sexType("type").notNull(),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

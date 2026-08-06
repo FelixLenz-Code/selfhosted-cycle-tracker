@@ -1,8 +1,9 @@
 import "server-only";
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc, gte, lte } from "drizzle-orm";
 import { db } from "@/db";
-import { periodEntries, cycleSettings } from "@/db/schema";
+import { periodEntries, cycleSettings, sexEntries } from "@/db/schema";
 import type { PeriodEntryLite, CycleSettingsLite, CycleMode } from "./cycle";
+import type { SexEntry, SexType } from "./sex";
 
 export type CycleSettingsForm = {
   avgCycleLengthOverride: number | null;
@@ -84,4 +85,52 @@ export async function getCycleSettingsForm(ownerId: string): Promise<CycleSettin
     };
   }
   return { ...r, notifyTime: r.notifyTime.slice(0, 5) };
+}
+
+// --- Sex-Einträge ---
+const sexColumns = {
+  id: sexEntries.id,
+  occurredOn: sexEntries.occurredOn,
+  occurredTime: sexEntries.occurredTime,
+  type: sexEntries.type,
+};
+
+// Postgres liefert `time` als "HH:MM:SS" – für Anzeige und <input type="time">
+// wird auf "HH:MM" gekürzt.
+function toSexEntry(r: {
+  id: string;
+  occurredOn: string;
+  occurredTime: string;
+  type: SexType;
+}): SexEntry {
+  return { ...r, occurredTime: r.occurredTime.slice(0, 5) };
+}
+
+export async function getSexEntries(ownerId: string): Promise<SexEntry[]> {
+  const rows = await db
+    .select(sexColumns)
+    .from(sexEntries)
+    .where(eq(sexEntries.ownerId, ownerId))
+    .orderBy(desc(sexEntries.occurredOn), desc(sexEntries.occurredTime));
+  return rows.map(toSexEntry);
+}
+
+// Einträge eines Zeitraums (für die Kalender-Markierung), aufsteigend nach Zeit.
+export async function getSexEntriesBetween(
+  ownerId: string,
+  fromIso: string,
+  toIso: string,
+): Promise<SexEntry[]> {
+  const rows = await db
+    .select(sexColumns)
+    .from(sexEntries)
+    .where(
+      and(
+        eq(sexEntries.ownerId, ownerId),
+        gte(sexEntries.occurredOn, fromIso),
+        lte(sexEntries.occurredOn, toIso),
+      ),
+    )
+    .orderBy(sexEntries.occurredOn, sexEntries.occurredTime);
+  return rows.map(toSexEntry);
 }
