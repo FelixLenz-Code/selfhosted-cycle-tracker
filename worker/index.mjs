@@ -57,6 +57,36 @@ function warnNoDevice(key, message) {
   console.warn(message);
 }
 
+// Gleichlautende Kopie von src/lib/push-endpoint.ts (der Worker ist reines
+// JS und kann das TS-Modul nicht importieren) – Änderungen dort mitziehen.
+// Verhindert, dass eine manipulierte Endpoint-URL den Server auf interne Ziele
+// zeigen lässt (SSRF).
+const BLOCKED_HOSTNAMES = new Set(["localhost", "localhost.localdomain"]);
+const BLOCKED_SUFFIXES = [".localhost", ".local", ".internal", ".home", ".lan"];
+const IPV4 = /^\d{1,3}(\.\d{1,3}){3}$/;
+
+function isAllowedPushEndpoint(endpoint) {
+  if (typeof endpoint !== "string" || endpoint.length === 0 || endpoint.length > 2000) {
+    return false;
+  }
+  let url;
+  try {
+    url = new URL(endpoint);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== "https:") return false;
+  if (url.port !== "" && url.port !== "443") return false;
+  if (url.username !== "" || url.password !== "") return false;
+
+  const host = url.hostname.toLowerCase();
+  if (BLOCKED_HOSTNAMES.has(host)) return false;
+  if (BLOCKED_SUFFIXES.some((s) => host.endsWith(s))) return false;
+  if (host.startsWith("[") || IPV4.test(host)) return false;
+  if (!host.includes(".") || host.startsWith(".") || host.endsWith(".")) return false;
+  return true;
+}
+
 async function sendToUser(userId, payload) {
   const subs = await sql`
     select id, endpoint, p256dh, auth from push_subscriptions where user_id = ${userId}`;
@@ -64,6 +94,11 @@ async function sendToUser(userId, payload) {
   const body = JSON.stringify(payload);
   let sent = 0;
   for (const s of subs) {
+    if (!isAllowedPushEndpoint(s.endpoint)) {
+      await sql`delete from push_subscriptions where id = ${s.id}`;
+      console.warn("[worker] Push-Endpoint unzulässig – Subscription entfernt");
+      continue;
+    }
     try {
       await webpush.sendNotification(
         { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },

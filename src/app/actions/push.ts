@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { pushSubscriptions } from "@/db/schema";
 import { requireUser } from "@/lib/dal";
 import { sendPushToUser } from "@/lib/push";
+import { isAllowedPushEndpoint } from "@/lib/push-endpoint";
 
 export type SerializedSubscription = {
   endpoint: string;
@@ -16,6 +17,13 @@ export async function subscribeUser(
   userAgent?: string,
 ): Promise<{ success: boolean }> {
   const user = await requireUser();
+
+  // Der Server baut später eine Verbindung zu dieser URL auf – sie darf nicht
+  // auf ein beliebiges (internes) Ziel zeigen.
+  if (!isAllowedPushEndpoint(sub?.endpoint)) return { success: false };
+  if (typeof sub.keys?.p256dh !== "string" || typeof sub.keys?.auth !== "string") {
+    return { success: false };
+  }
 
   await db
     .insert(pushSubscriptions)

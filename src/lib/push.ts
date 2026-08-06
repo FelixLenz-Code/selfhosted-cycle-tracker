@@ -3,6 +3,7 @@ import webpush from "web-push";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { pushSubscriptions } from "@/db/schema";
+import { isAllowedPushEndpoint } from "./push-endpoint";
 
 let configured = false;
 
@@ -43,6 +44,14 @@ export async function sendPushToUser(
   let removed = 0;
 
   for (const s of subs) {
+    // Auch beim Senden prüfen: Einträge könnten vor der Eingangsprüfung
+    // gespeichert worden sein.
+    if (!isAllowedPushEndpoint(s.endpoint)) {
+      await db.delete(pushSubscriptions).where(eq(pushSubscriptions.id, s.id));
+      removed++;
+      console.warn("Push-Endpoint unzulässig – Subscription entfernt");
+      continue;
+    }
     try {
       await webpush.sendNotification(
         { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
