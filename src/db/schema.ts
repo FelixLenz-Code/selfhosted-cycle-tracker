@@ -87,8 +87,13 @@ export const partnerLinks = pgTable("partner_links", {
   partnerId: uuid("partner_id").references(() => users.id, {
     onDelete: "cascade",
   }),
-  // E-Mail des Eingeladenen, falls Account noch nicht existiert/akzeptiert
+  // E-Mail des Eingeladenen – nur Merkhilfe für die einladende Person.
+  // Bewusst KEIN Berechtigungsnachweis: E-Mail-Adressen sind nicht verifiziert.
   invitedEmail: text("invited_email"),
+  // Geheimer Einlöse-Code für Einladungen an Personen ohne Konto. Wird von der
+  // einladenden Person weitergegeben und ersetzt die frühere Zuordnung per
+  // E-Mail-Adresse.
+  inviteCode: text("invite_code").unique(),
   status: partnerStatus("status").notNull().default("pending"),
   canView: boolean("can_view").notNull().default(true),
   canEdit: boolean("can_edit").notNull().default(false),

@@ -7,6 +7,13 @@ import { db } from "@/db";
 import { users, partnerLinks } from "@/db/schema";
 import { requireUser } from "@/lib/dal";
 import { isUuid } from "@/lib/ids";
+import { generateInviteCode, normalizeInviteCode, formatInviteCode } from "@/lib/invite-code";
+import {
+  getClientIp,
+  isRateLimited,
+  registerFailedAttempt,
+  resetAttempts,
+} from "@/lib/rate-limit";
 
 export type InviteState = { error?: string; success?: string } | undefined;
 
@@ -66,32 +73,39 @@ export async function invitePartner(
     return { error: "Für diese Person besteht bereits eine Einladung oder Verknüpfung." };
   }
 
+  // Code nur nötig, wenn es noch kein Konto gibt: Bestehende Konten sind über
+  // partner_id eindeutig zugeordnet und nehmen direkt in ihrer Liste an.
+  const inviteCode = partnerId ? null : generateInviteCode();
+
   await db.insert(partnerLinks).values({
     ownerId: user.id,
     partnerId,
     invitedEmail: email,
+    inviteCode,
     status: "pending",
     canView: true,
     canEdit,
   });
 
   revalidatePath("/partners");
-  return { success: "Einladung erstellt." };
+  return {
+    success: inviteCode
+      ? `Einladung erstellt. Code zum Weitergeben: ${formatInviteCode(inviteCode)}`
+      : "Einladung erstellt – sie erscheint direkt im Konto der Person.",
+  };
 }
 
-async function findOwnInvite(linkId: string, userId: string, userEmail: string) {
+// Einladung, die dem angemeldeten Konto zugeordnet ist. Bewusst NUR über
+// partner_id: Eine Zuordnung über invited_email wäre kein Nachweis, weil
+// E-Mail-Adressen bei der Registrierung nicht verifiziert werden – wer die
+// eingeladene Adresse kennt, könnte sich sonst damit registrieren und die
+// Einladung übernehmen. Ohne bestehendes Konto läuft die Annahme über
+// redeemInvite() mit dem geheimen Code.
+async function findOwnInvite(linkId: string, userId: string) {
   const rows = await db
     .select()
     .from(partnerLinks)
-    .where(
-      and(
-        eq(partnerLinks.id, linkId),
-        or(
-          eq(partnerLinks.partnerId, userId),
-          eq(partnerLinks.invitedEmail, userEmail.toLowerCase()),
-        ),
-      ),
-    )
+    .where(and(eq(partnerLinks.id, linkId), eq(partnerLinks.partnerId, userId)))
     .limit(1);
   return rows[0] ?? null;
 }
@@ -101,7 +115,7 @@ export async function acceptInvite(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!isUuid(id)) return;
 
-  const invite = await findOwnInvite(id, user.id, user.email);
+  const invite = await findOwnInvite(id, user.id);
   if (!invite || invite.status !== "pending") return;
 
   await db
@@ -118,11 +132,58 @@ export async function declineInvite(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!isUuid(id)) return;
 
-  const invite = await findOwnInvite(id, user.id, user.email);
+  const invite = await findOwnInvite(id, user.id);
   if (!invite || invite.status !== "pending") return;
 
   await db.update(partnerLinks).set({ status: "revoked" }).where(eq(partnerLinks.id, id));
   revalidatePath("/partners");
+}
+
+// Einladung ohne bestehendes Konto: Annahme über den geheimen Code, den die
+// einladende Person weitergibt.
+export async function redeemInvite(
+  _prev: InviteState,
+  formData: FormData,
+): Promise<InviteState> {
+  const user = await requireUser();
+  const code = normalizeInviteCode(String(formData.get("code") ?? ""));
+  if (code.length < 8 || code.length > 32) {
+    return { error: "Bitte den vollständigen Einladungs-Code eingeben." };
+  }
+
+  // Codes raten unattraktiv machen (pro Konto und pro IP begrenzt).
+  const keys = [`invite:user:${user.id}`, `invite:ip:${await getClientIp()}`];
+  if (await isRateLimited(keys)) {
+    return { error: "Zu viele Versuche. Bitte in einigen Minuten erneut versuchen." };
+  }
+
+  const rows = await db
+    .select()
+    .from(partnerLinks)
+    .where(and(eq(partnerLinks.inviteCode, code), eq(partnerLinks.status, "pending")))
+    .limit(1);
+  const invite = rows[0];
+
+  // Eine bereits einem anderen Konto zugeordnete Einladung ist nicht einlösbar.
+  if (!invite || invite.ownerId === user.id || (invite.partnerId && invite.partnerId !== user.id)) {
+    await registerFailedAttempt(keys);
+    return { error: "Code ist ungültig oder wurde bereits verwendet." };
+  }
+
+  await db
+    .update(partnerLinks)
+    .set({
+      status: "accepted",
+      partnerId: user.id,
+      acceptedAt: new Date(),
+      inviteCode: null, // einmalig verwendbar
+    })
+    .where(eq(partnerLinks.id, invite.id));
+
+  await resetAttempts(keys);
+  revalidatePath("/partners");
+  revalidatePath("/dashboard");
+  return { success: "Einladung angenommen." };
 }
 
 // Owner entfernt eine Verknüpfung/Einladung vollständig.

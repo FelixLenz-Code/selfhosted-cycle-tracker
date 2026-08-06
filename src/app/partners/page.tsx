@@ -2,6 +2,8 @@ import { requireUser } from "@/lib/dal";
 import { getIncomingInvites, getOutgoingLinks, getLinkedOwners } from "@/lib/access";
 import { AppShell } from "@/components/app-shell";
 import { InviteForm } from "@/components/invite-form";
+import { RedeemInviteForm } from "@/components/redeem-invite-form";
+import { formatInviteCode } from "@/lib/invite-code";
 import {
   acceptInvite,
   declineInvite,
@@ -19,7 +21,7 @@ const statusLabel: Record<string, string> = {
 export default async function PartnersPage() {
   const user = await requireUser();
   const [incoming, outgoing, linkedOwners] = await Promise.all([
-    getIncomingInvites(user.id, user.email.toLowerCase()),
+    getIncomingInvites(user.id),
     getOutgoingLinks(user.id),
     getLinkedOwners(user.id),
   ]);
@@ -118,6 +120,15 @@ export default async function PartnersPage() {
         </section>
       )}
 
+      <section className="surface-card mt-8 p-5">
+        <h2 className="text-lg font-medium">Einladung mit Code annehmen</h2>
+        <p className="mt-1 mb-3 text-sm text-black/60 dark:text-white/60">
+          Wurdest du eingeladen, bevor du ein Konto hattest? Dann nimm die
+          Einladung hier mit dem Code an.
+        </p>
+        <RedeemInviteForm />
+      </section>
+
       {canShare && (
       <section className="mt-8">
         <h2 className="text-lg font-medium">Deine Freigaben</h2>
@@ -137,6 +148,16 @@ export default async function PartnersPage() {
                     {statusLabel[link.status] ?? link.status} ·{" "}
                     {link.canEdit ? "ansehen + bearbeiten" : "nur ansehen"}
                   </div>
+                  {link.status === "pending" && link.inviteCode && (
+                    <div className="mt-1.5 text-xs">
+                      <span className="text-black/50 dark:text-white/50">
+                        Code zum Weitergeben:{" "}
+                      </span>
+                      <code className="rounded bg-black/5 px-1.5 py-0.5 font-mono tracking-wider dark:bg-white/10">
+                        {formatInviteCode(link.inviteCode)}
+                      </code>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   {link.status === "accepted" && (

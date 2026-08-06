@@ -42,7 +42,9 @@ export function InviteForm() {
       {state?.error && <p className="text-sm text-red-500">{state.error}</p>}
       {state?.success && <p className="text-sm text-green-600">{state.success}</p>}
       <p className="text-xs text-black/50 dark:text-white/50">
-        Die Person muss sich mit dieser E-Mail registrieren, um die Einladung anzunehmen.
+        Hat die Person schon ein Konto mit dieser E-Mail, erscheint die Einladung
+        direkt bei ihr. Sonst bekommst du einen Code, den du ihr weitergibst –
+        damit nimmt sie die Einladung nach der Registrierung an.
       </p>
     </form>
   );

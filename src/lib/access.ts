@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, or } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users, partnerLinks } from "@/db/schema";
 import type { CurrentUser } from "./dal";
@@ -101,6 +101,7 @@ export type OutgoingLink = {
   canView: boolean;
   canEdit: boolean;
   invitedEmail: string | null;
+  inviteCode: string | null;
   partnerId: string | null;
   partnerName: string | null;
 };
@@ -114,6 +115,7 @@ export async function getOutgoingLinks(ownerId: string): Promise<OutgoingLink[]>
       canView: partnerLinks.canView,
       canEdit: partnerLinks.canEdit,
       invitedEmail: partnerLinks.invitedEmail,
+      inviteCode: partnerLinks.inviteCode,
       partnerId: partnerLinks.partnerId,
       partnerName: users.displayName,
     })
@@ -129,11 +131,11 @@ export type IncomingInvite = {
   ownerName: string;
 };
 
-// Offene Einladungen an den aktuellen User (per partnerId oder invited_email).
-export async function getIncomingInvites(
-  userId: string,
-  userEmail: string,
-): Promise<IncomingInvite[]> {
+// Offene Einladungen an den aktuellen User – ausschließlich über partner_id,
+// also an ein konkretes Konto gerichtet. Einladungen an eine E-Mail ohne Konto
+// tauchen hier bewusst nicht auf: Die Adresse ist unbestätigt und damit kein
+// Nachweis; solche Einladungen werden über den Code eingelöst (redeemInvite).
+export async function getIncomingInvites(userId: string): Promise<IncomingInvite[]> {
   return db
     .select({
       id: partnerLinks.id,
@@ -144,12 +146,6 @@ export async function getIncomingInvites(
     .from(partnerLinks)
     .innerJoin(users, eq(users.id, partnerLinks.ownerId))
     .where(
-      and(
-        eq(partnerLinks.status, "pending"),
-        or(
-          eq(partnerLinks.partnerId, userId),
-          eq(partnerLinks.invitedEmail, userEmail),
-        ),
-      ),
+      and(eq(partnerLinks.status, "pending"), eq(partnerLinks.partnerId, userId)),
     );
 }
