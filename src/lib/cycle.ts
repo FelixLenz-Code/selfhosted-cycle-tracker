@@ -49,7 +49,10 @@ export function formatDate(d: Date): string {
 }
 
 export function todayISO(now: Date = new Date()): string {
-  return formatDate(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())));
+  // Lokales Kalenderdatum (Server: TZ=APP_TIMEZONE, Client: Gerätezeitzone).
+  // Mit UTC-Gettern wäre "heute" je nach Zeitzone nachts bzw. abends um einen
+  // Tag verschoben – und liefe dem Worker (lokale Zeit) auseinander.
+  return formatDate(new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())));
 }
 
 export function addDays(iso: string, days: number): string {
