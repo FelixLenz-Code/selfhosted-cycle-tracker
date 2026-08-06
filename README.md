@@ -68,8 +68,10 @@ Weitere Befehle: `./install.sh status` · `logs` · `uninstall [--purge]`.
 Wichtige Env-Variablen: `CYCLE_PORT`, `CYCLE_TZ`, `COOKIE_SECURE`, `VAPID_SUBJECT`,
 `CYCLE_REF` (siehe Kommentare in `install.sh`).
 
-> Hinter HTTPS: in `.env` `COOKIE_SECURE=true` setzen und `./install.sh update`.
-> Ohne HTTPS bleibt es `false`, sonst funktioniert der Login nicht.
+> `COOKIE_SECURE` ist standardmäßig `true`: Das Session-Cookie verlässt den
+> Server nur über HTTPS. Läuft die App ohne TLS über `http://<host-oder-ip>`,
+> in `.env` auf `false` setzen und `./install.sh update` ausführen – sonst
+> funktioniert dort der Login nicht. (`http://localhost` geht auch mit `true`.)
 
 ### Betrieb hinter einem Reverse Proxy (empfohlen bei öffentlichem Zugriff)
 
@@ -81,7 +83,7 @@ ausgelegt. Wichtig:
 - Der Proxy muss den Header **`X-Forwarded-For`** mit der echten Client-IP setzen –
   darauf basiert das eingebaute **Login-/Registrierungs-Rate-Limit**
   (10 Versuche pro 15 Min je IP und je E-Mail).
-- Mit TLS am Proxy zusätzlich `COOKIE_SECURE=true` setzen.
+- Mit TLS am Proxy `COOKIE_SECURE` auf dem Standard `true` belassen.
 
 Beispiel (Caddy):
 

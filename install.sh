@@ -17,7 +17,7 @@
 #   CYCLE_REF     Git-Ref (Tag/Branch/SHA)        (Standard: neuestes Release, sonst main)
 #   CYCLE_PORT    Host-Port                       (Standard: 3000)
 #   CYCLE_TZ      Zeitzone                        (Standard: Europe/Berlin)
-#   COOKIE_SECURE "true" hinter HTTPS             (Standard: false)
+#   COOKIE_SECURE "true"/"false" – überspringt die Rückfrage (Standard: true)
 #   VAPID_SUBJECT mailto:-Adresse für Web Push    (Standard: mailto:admin@example.com)
 #   CYCLE_FRESH   "1" = beim Update Daten löschen & frisch aufsetzen
 #   CYCLE_BUILD   "1" = Image lokal bauen statt das veröffentlichte Image zu ziehen
@@ -112,6 +112,50 @@ download_into() {
     || die "Download/Entpacken für Ref '$ref' fehlgeschlagen."
 }
 
+# Liest einen Wert aus der .env (ohne umschließende Anführungszeichen).
+# Fehlt der Schlüssel, kommt ein leerer String – kein Fehlerstatus, sonst
+# würde `set -e` bei einer Zuweisung wie `x=$(env_value …)` abbrechen.
+env_value() {
+  local key="$1" file="${2:-$DIR/.env}"
+  { grep -m1 "^${key}=" "$file" 2>/dev/null | sed -E "s/^${key}=[\"']?(.*[^\"'])[\"']?$/\1/"; } || true
+}
+
+# Ist ein Terminal für Rückfragen da? (auch bei `curl ... | bash`, wo stdin die Pipe ist)
+have_tty() { { : </dev/tty; } 2>/dev/null; }
+
+# Fragt, ob das Session-Cookie nur über HTTPS ausgeliefert werden soll, und
+# setzt COOKIE_SECURE_CHOICE. Vorrang hat eine gesetzte Umgebungsvariable;
+# ohne Terminal bleibt es bei der Vorgabe ($1, Standard "true").
+ask_cookie_secure() {
+  local default="${1:-true}" mark_true='' mark_false='' pick
+  case "$default" in false) ;; *) default=true;; esac
+
+  if [ -n "${COOKIE_SECURE:-}" ]; then
+    case "$COOKIE_SECURE" in
+      true|false) COOKIE_SECURE_CHOICE="$COOKIE_SECURE";;
+      *) warn "COOKIE_SECURE='${COOKIE_SECURE}' ist weder true noch false — nutze ${B}$default${N}."
+         COOKIE_SECURE_CHOICE="$default";;
+    esac
+    return
+  fi
+  if ! have_tty; then COOKIE_SECURE_CHOICE="$default"; return; fi
+
+  if [ "$default" = false ]; then mark_false=' [aktuell]'; pick=2; else mark_true=' [aktuell]'; pick=1; fi
+  printf '\n' >/dev/tty
+  printf '%s\n' "${B}Wie ist die App erreichbar?${N}" >/dev/tty
+  printf '  Davon hängt ab, ob das Session-Cookie nur über HTTPS gesendet wird\n' >/dev/tty
+  printf '  (COOKIE_SECURE). Falsch gewählt, funktioniert der Login nicht.\n' >/dev/tty
+  printf '  %s1)%s Über HTTPS, z. B. Reverse Proxy mit TLS — empfohlen%s\n' "$B" "$N" "$mark_true" >/dev/tty
+  printf '  %s2)%s Ohne TLS über http://<ip>:<port>, z. B. nur im Heimnetz%s\n' "$B" "$N" "$mark_false" >/dev/tty
+  printf '%s' "Auswahl [$pick]: " >/dev/tty
+  local ans; read -r ans </dev/tty || true
+  case "$ans" in
+    1) COOKIE_SECURE_CHOICE=true;;
+    2) COOKIE_SECURE_CHOICE=false;;
+    *) COOKIE_SECURE_CHOICE="$default";;
+  esac
+}
+
 # Aktualisiert/ergänzt einen Schlüssel in der .env.
 set_env() {
   local key="$1" val="$2" file="$DIR/.env"
@@ -129,7 +173,7 @@ write_env() {
   dbpass=$(gen_password)
   session_secret=$(gen_secret)
   app_port="${CYCLE_PORT:-3000}"
-  cookie_secure="${COOKIE_SECURE:-false}"
+  cookie_secure="${COOKIE_SECURE_CHOICE:-${COOKIE_SECURE:-true}}"
   tz="${CYCLE_TZ:-Europe/Berlin}"
   subject="${VAPID_SUBJECT:-mailto:admin@example.com}"
   gen_vapid
@@ -195,6 +239,8 @@ cmd_install() {
   printf '%s\n' "$ref" > "$DIR/.cycle-version"
   export IMAGE_TAG="$ref"
 
+  ask_cookie_secure true
+
   info "Konfiguriere ${B}$DIR/.env${N} ..."
   write_env
 
@@ -207,8 +253,11 @@ cmd_install() {
   echo
   info "Erstes Konto anlegen: ${C}$(access_url)/register${N}"
   info "Verwalten:  ${B}$0 status${N} · ${B}$0 logs${N} · ${B}$0 update${N}"
-  [ "$(grep -m1 '^COOKIE_SECURE=' "$DIR/.env" | grep -c true || true)" = 1 ] || \
-    info "Hinter HTTPS? Dann ${B}COOKIE_SECURE=true${N} in $DIR/.env setzen und ${B}$0 update${N} ausführen."
+  if [ "$(grep -m1 '^COOKIE_SECURE=' "$DIR/.env" | grep -c false || true)" = 1 ]; then
+    info "${B}COOKIE_SECURE=false${N} – das Session-Cookie geht auch unverschlüsselt raus. Hinter HTTPS auf ${B}true${N} setzen und ${B}$0 update${N} ausführen."
+  else
+    info "${B}COOKIE_SECURE=true${N} (Standard): Login nur über HTTPS bzw. localhost. Ohne TLS in $DIR/.env auf ${B}false${N} setzen."
+  fi
 }
 
 choose_update_mode() {
@@ -241,6 +290,9 @@ cmd_update_fresh() {
   confirm_fresh
   local new; new=$(resolve_ref)
   info "Frische Installation in ${B}$DIR${N} → Version ${B}$new${N}."
+
+  # Bisherige Wahl als Vorbelegung übernehmen, bevor die .env gelöscht wird.
+  ask_cookie_secure "$(env_value COOKIE_SECURE)"
 
   info "Stoppe Container und entferne das Datenbank-Volume ..."
   compose down -v || true
@@ -305,6 +357,14 @@ cmd_update() {
   export IMAGE_TAG="$new"
   merge_new_env_keys
 
+  # Erreichbarkeit kann sich geändert haben (z. B. Proxy mit TLS dazugekommen).
+  local cs_before; cs_before=$(env_value COOKIE_SECURE)
+  ask_cookie_secure "$cs_before"
+  if [ "$COOKIE_SECURE_CHOICE" != "$cs_before" ]; then
+    set_env COOKIE_SECURE "$COOKIE_SECURE_CHOICE"
+    info "COOKIE_SECURE: ${B}${cs_before:-nicht gesetzt}${N} → ${B}$COOKIE_SECURE_CHOICE${N}"
+  fi
+
   info "Starte (Migrationen laufen automatisch) ..."
   compose_up
 
@@ -327,7 +387,8 @@ ${B}Selfhosted Cycle Tracker — Installer${N}
   install              Aktuelle Version laden und starten (Standard)
   update [Optionen]    Bestehende Installation aktualisieren. Ohne Flag wird
                        gefragt, ob Daten & Einstellungen erhalten bleiben oder
-                       frisch aufgesetzt wird.
+                       frisch aufgesetzt wird, und ob das Session-Cookie nur
+                       über HTTPS gehen soll (COOKIE_SECURE).
                          --force   Neustart erzwingen, auch wenn aktuell
                          --keep    Daten & Einstellungen behalten (ohne Nachfrage)
                          --fresh   Datenbank UND .env löschen, frisch aufsetzen
