@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/dal";
 import { resolveOwnerAccess, getLinkedOwners } from "@/lib/access";
 import { getPeriodEntries, getCycleSettings, getSexEntriesBetween } from "@/lib/queries";
+import { getMedications } from "@/lib/medications-queries";
 import { computeCycleStats, todayISO } from "@/lib/cycle";
 import { formatMonthLabel } from "@/lib/format";
 import { AppShell } from "@/components/app-shell";
@@ -53,12 +54,14 @@ export default async function CalendarPage({
     new Date(Date.UTC(mYear, mMonth, 0)).getUTCDate(),
   )}`;
 
-  const [entries, settings, sexOfMonth] = await Promise.all([
+  const [entries, settings, sexOfMonth, meds] = await Promise.all([
     getPeriodEntries(access.ownerId),
     getCycleSettings(access.ownerId),
     getSexEntriesBetween(access.ownerId, monthStart, monthEnd),
+    getMedications(access.ownerId),
   ]);
-  const stats = computeCycleStats(entries, settings, todayISO());
+  const today = todayISO();
+  const stats = computeCycleStats(entries, settings, today);
 
   const prev = shiftMonth(monthStart, -1);
   const next = shiftMonth(monthStart, 1);
@@ -104,7 +107,10 @@ export default async function CalendarPage({
           monthStart={monthStart}
           entries={entries}
           stats={stats}
+          today={today}
           sexEntries={sexOfMonth}
+          medications={meds}
+          sexHref={access.isSelf ? "/sex" : `/sex?owner=${access.ownerId}`}
         />
       </section>
     </AppShell>

@@ -2,18 +2,9 @@ import "server-only";
 import { eq, desc } from "drizzle-orm";
 import { db } from "@/db";
 import { medications } from "@/db/schema";
+import type { Medication } from "./medications";
 
-export type Medication = {
-  id: string;
-  name: string;
-  dosage: string | null;
-  active: boolean;
-  scheduleType: "fixed_time" | "cycle_relative";
-  times: string[];
-  weekdays: number[]; // ISO 1=Mo..7=So; leer = täglich
-  cycleDayFrom: number | null;
-  cycleDayTo: number | null;
-};
+export type { Medication };
 
 export async function getMedications(ownerId: string): Promise<Medication[]> {
   const rows = await db

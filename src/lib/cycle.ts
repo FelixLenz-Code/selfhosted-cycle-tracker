@@ -162,6 +162,17 @@ export function isInGvWindow(iso: string, stats: CycleStats): boolean {
   return Boolean(stats.gvWindow && isWithin(iso, stats.gvWindow.start, stats.gvWindow.end));
 }
 
+// Zyklustag eines beliebigen Kalendertages: Tag 1 = letzter Blutungsbeginn,
+// der nicht nach diesem Tag liegt. Null, wenn davor keine Blutung erfasst ist.
+export function cycleDayOn(iso: string, entries: PeriodEntryLite[]): number | null {
+  let last: string | null = null;
+  for (const e of entries) {
+    if (diffDays(iso, e.startDate) < 0) continue;
+    if (last === null || diffDays(e.startDate, last) > 0) last = e.startDate;
+  }
+  return last === null ? null : diffDays(iso, last) + 1;
+}
+
 // Klassifizierung eines Tages für die Kalenderansicht
 export type DayKind = "period" | "predicted-period" | "fertile" | "none";
 
