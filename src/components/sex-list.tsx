@@ -55,38 +55,45 @@ export function SexList({
             {day.items.map((e) => (
               <li
                 key={e.id}
-                className="flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.03]"
+                className="px-4 py-3 transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.03]"
               >
-                <span className="w-12 shrink-0 pt-0.5 text-sm font-medium tabular-nums">
-                  {e.occurredTime}
-                </span>
+                {/* Schmale Displays: Uhrzeit und Aktionen als Kopfzeile, die
+                    Beteiligten darunter über die volle Breite. Ab sm löst sich
+                    der Wrapper auf (contents) und alles steht in einer Zeile. */}
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+                  <div className="flex items-center justify-between gap-2 sm:contents">
+                    <span className="text-sm font-medium tabular-nums sm:w-12 sm:shrink-0 sm:pt-0.5">
+                      {e.occurredTime}
+                    </span>
 
-                <div className="flex-1">
-                  <ParticipantChips participants={e.participants} />
-                </div>
-
-                {canEdit && (
-                  <div className="flex shrink-0 items-center gap-1">
-                    <SexDialog
-                      ownerId={ownerId}
-                      today={today}
-                      nowTime={nowTime}
-                      people={people}
-                      entry={e}
-                      label="Bearbeiten"
-                      buttonClassName="rounded-md border border-black/15 px-2.5 py-1 text-xs font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-                    />
-                    <ConfirmSubmit
-                      action={deleteSexEntry}
-                      hidden={{ id: e.id, ownerId }}
-                      label="✕"
-                      confirmLabel="Wirklich löschen?"
-                      idleAriaLabel="Eintrag löschen"
-                      idleClassName="rounded-md px-2 py-1 text-xs text-black/40 hover:bg-red-500/10 hover:text-red-600 dark:text-white/40"
-                      confirmClassName="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
-                    />
+                    {canEdit && (
+                      <div className="flex shrink-0 items-center gap-1 sm:order-3">
+                        <SexDialog
+                          ownerId={ownerId}
+                          today={today}
+                          nowTime={nowTime}
+                          people={people}
+                          entry={e}
+                          label="Bearbeiten"
+                          buttonClassName="rounded-md border border-black/15 px-2.5 py-1.5 text-xs font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+                        />
+                        <ConfirmSubmit
+                          action={deleteSexEntry}
+                          hidden={{ id: e.id, ownerId }}
+                          label="✕"
+                          confirmLabel="Wirklich löschen?"
+                          idleAriaLabel="Eintrag löschen"
+                          idleClassName="rounded-md px-2 py-1.5 text-xs text-black/40 hover:bg-red-500/10 hover:text-red-600 dark:text-white/40"
+                          confirmClassName="rounded-md bg-red-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+                        />
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  <div className="min-w-0 sm:flex-1">
+                    <ParticipantChips participants={e.participants} />
+                  </div>
+                </div>
               </li>
             ))}
           </ul>

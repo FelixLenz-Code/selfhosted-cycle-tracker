@@ -50,7 +50,7 @@ const GV_SYMBOL = "♥";
 const GV_LABEL = "Spaß-Zeit";
 
 const dialogClass =
-  "m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-black/10 bg-white p-0 text-black shadow-xl backdrop:bg-black/50 dark:border-white/15 dark:bg-neutral-900 dark:text-white";
+  "m-auto w-[calc(100%-1.5rem)] max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-0 text-[var(--foreground)] shadow-xl backdrop:bg-black/50";
 
 function pad(n: number): string {
   return n.toString().padStart(2, "0");
@@ -271,8 +271,8 @@ function DayDetails({
   const meds = medicationsDueOn(iso, medications, cycleDay);
 
   return (
-    <div className="flex max-h-[85vh] flex-col">
-      <div className="flex items-center justify-between gap-3 border-b border-black/10 px-5 py-3 dark:border-white/10">
+    <div className="flex max-h-[85svh] flex-col">
+      <div className="flex items-center justify-between gap-3 border-b border-black/10 px-4 py-3 sm:px-5 dark:border-white/10">
         <h2 className="text-base font-semibold">
           {formatGermanDateWithWeekday(iso)}
           {iso === today && (
@@ -285,13 +285,13 @@ function DayDetails({
           type="button"
           onClick={onClose}
           aria-label="Schließen"
-          className="grid h-8 w-8 place-items-center rounded-full text-lg leading-none text-black/50 hover:bg-black/5 dark:text-white/50 dark:hover:bg-white/10"
+          className="-mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-full text-lg leading-none text-black/50 hover:bg-black/5 dark:text-white/50 dark:hover:bg-white/10"
         >
           ✕
         </button>
       </div>
 
-      <div className="flex flex-col gap-5 overflow-y-auto px-5 py-4 text-sm">
+      <div className="flex flex-col gap-5 overflow-y-auto px-4 py-4 text-sm sm:px-5">
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wide text-black/45 dark:text-white/45">
             Zyklus
@@ -331,13 +331,18 @@ function DayDetails({
           {sexOfDay.length === 0 ? (
             <p className="mt-2 text-black/55 dark:text-white/55">Keine Einträge.</p>
           ) : (
-            <ul className="mt-2 flex flex-col gap-2">
+            <ul className="mt-2 flex flex-col gap-3">
               {sexOfDay.map((e) => (
-                <li key={e.id} className="flex items-start gap-3">
-                  <span className="w-12 shrink-0 pt-0.5 text-sm font-medium tabular-nums">
+                <li
+                  key={e.id}
+                  className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3"
+                >
+                  <span className="text-sm font-medium tabular-nums sm:w-12 sm:shrink-0 sm:pt-0.5">
                     {e.occurredTime}
                   </span>
-                  <ParticipantChips participants={e.participants} />
+                  <div className="min-w-0 sm:flex-1">
+                    <ParticipantChips participants={e.participants} />
+                  </div>
                 </li>
               ))}
             </ul>

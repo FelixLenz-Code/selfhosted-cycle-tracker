@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+// Auf schmalen Geräten fast bildschirmbreit, damit der Inhalt Luft hat.
 const dialogClass =
-  "m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-black/10 bg-white p-0 text-black shadow-xl backdrop:bg-black/50 dark:border-white/15 dark:bg-neutral-900 dark:text-white";
+  "m-auto w-[calc(100%-1.5rem)] max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-0 text-[var(--foreground)] shadow-xl backdrop:bg-black/50";
 
 // Knopf, der seinen Inhalt in einem modalen <dialog> öffnet.
 // Der Inhalt wird erst beim Öffnen gerendert, damit Formulare bei jedem Öffnen
@@ -54,19 +55,23 @@ export function ModalButton({
         }}
       >
         {open && (
-          <div className="flex max-h-[85vh] flex-col">
-            <div className="flex items-center justify-between gap-3 border-b border-black/10 px-5 py-3 dark:border-white/10">
+          <div className="flex max-h-[85svh] flex-col">
+            <div className="flex items-center justify-between gap-3 border-b border-black/10 px-4 py-3 sm:px-5 dark:border-white/10">
               <h2 className="text-base font-semibold">{title}</h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Schließen"
-                className="grid h-8 w-8 place-items-center rounded-full text-lg leading-none text-black/50 hover:bg-black/5 dark:text-white/50 dark:hover:bg-white/10"
+                className="-mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-full text-lg leading-none text-black/50 hover:bg-black/5 dark:text-white/50 dark:hover:bg-white/10"
               >
                 ✕
               </button>
             </div>
-            <div className="overflow-y-auto px-5 py-4">
+            {/* Scrollbereich ohne unteres Padding: So kann ein Formular einen
+                sticky Fußbereich bündig an den unteren Rand setzen, ohne dass
+                Inhalt in einem Rest-Padding darunter durchscrollt. Formulare
+                ohne Fußbereich bringen ihren eigenen Abstand mit. */}
+            <div className="overflow-y-auto px-4 pt-4 sm:px-5">
               {children(() => setOpen(false))}
             </div>
           </div>

@@ -47,7 +47,7 @@ export function MedicationForm({
   }, [state]);
 
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form action={action} className="flex flex-col gap-3 pb-4">
       {isEdit && <input type="hidden" name="id" value={medication!.id} />}
 
       <div className="flex flex-wrap gap-3">

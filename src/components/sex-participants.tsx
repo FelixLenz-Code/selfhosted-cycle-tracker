@@ -24,11 +24,13 @@ export function ParticipantChips({
         return (
           <span
             key={p.userId}
-            className="inline-flex items-center gap-1.5 rounded-full border border-black/10 py-0.5 pl-2.5 pr-1 text-xs dark:border-white/15"
+            // Auf schmalen Displays darf die Pille umbrechen, statt den Namen
+            // abzuschneiden – deshalb ein Radius, der auch zweizeilig passt.
+            className="inline-flex max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-2xl border border-black/10 py-1 pl-2.5 pr-1 text-xs dark:border-white/15"
           >
             <span className="font-medium">{p.name}</span>
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${type.badgeClass}`}
+              className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-medium ${type.badgeClass}`}
             >
               <span
                 aria-hidden
@@ -38,7 +40,7 @@ export function ParticipantChips({
             </span>
             <span
               title={orgasm.label}
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${orgasm.badgeClass}`}
+              className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-medium ${orgasm.badgeClass}`}
             >
               <span aria-hidden>{orgasm.symbol}</span>
               {orgasm.short}
