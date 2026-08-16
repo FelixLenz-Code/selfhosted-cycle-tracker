@@ -24,11 +24,28 @@ export function PeriodList({
     );
   }
 
+  // Zykluslänge eines Eintrags = Abstand von diesem Blutungsbeginn bis zum
+  // nächsten (Zyklustag 1 bis Zyklustag 1). Der jüngste Eintrag hat noch keinen
+  // Nachfolger – dort läuft der Zyklus noch.
+  const ascending = [...entries].sort((a, b) => diffDays(a.startDate, b.startDate));
+  const cycleLengths = new Map<string, number>();
+  for (let i = 0; i < ascending.length - 1; i++) {
+    const len = diffDays(ascending[i + 1].startDate, ascending[i].startDate);
+    if (len > 0) cycleLengths.set(ascending[i].id, len);
+  }
+  const newestId = ascending[ascending.length - 1]?.id;
+
   return (
     <ul className="surface-card overflow-hidden divide-y divide-black/5 dark:divide-white/10">
       {entries.map((e) => {
         const ongoing = e.endDate === null;
         const days = e.endDate !== null ? diffDays(e.endDate, e.startDate) + 1 : null;
+        const cycleLength = cycleLengths.get(e.id) ?? null;
+        // Laufender Zyklus: Tage seit Blutungsbeginn (Beginn = Tag 1).
+        const runningDay =
+          e.id === newestId && diffDays(today, e.startDate) >= 0
+            ? diffDays(today, e.startDate) + 1
+            : null;
         return (
           <li
             key={e.id}
@@ -51,15 +68,34 @@ export function PeriodList({
                   </>
                 )}
               </div>
-              <div className="mt-0.5 text-xs text-black/50 dark:text-white/50">
+              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-black/50 dark:text-white/50">
                 {ongoing ? (
                   <span className="inline-flex items-center rounded-full bg-rose-500/15 px-2 py-0.5 font-medium text-rose-700 dark:text-rose-300">
                     läuft noch
                   </span>
                 ) : (
-                  <>
+                  <span>
                     {days} {days === 1 ? "Tag" : "Tage"} Blutung
+                  </span>
+                )}
+                {cycleLength !== null ? (
+                  <>
+                    <span aria-hidden className="text-black/25 dark:text-white/25">
+                      ·
+                    </span>
+                    <span>
+                      Zyklus {cycleLength} {cycleLength === 1 ? "Tag" : "Tage"}
+                    </span>
                   </>
+                ) : (
+                  runningDay !== null && (
+                    <>
+                      <span aria-hidden className="text-black/25 dark:text-white/25">
+                        ·
+                      </span>
+                      <span>Zyklus läuft – Tag {runningDay}</span>
+                    </>
+                  )
                 )}
               </div>
             </div>
