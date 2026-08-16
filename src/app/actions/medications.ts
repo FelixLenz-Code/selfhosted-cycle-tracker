@@ -8,7 +8,7 @@ import { medications } from "@/db/schema";
 import { requireUser } from "@/lib/dal";
 import { isUuid } from "@/lib/ids";
 
-export type MedFormState = { error?: string } | undefined;
+export type MedFormState = { error?: string; ok?: boolean } | undefined;
 
 const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -80,7 +80,7 @@ export async function addMedication(
     cycleDayTo: d.scheduleType === "cycle_relative" ? d.cycleDayTo : null,
   });
   revalidatePath("/medications");
-  return undefined;
+  return { ok: true };
 }
 
 export async function updateMedication(
@@ -108,7 +108,7 @@ export async function updateMedication(
     })
     .where(and(eq(medications.id, id), eq(medications.ownerId, user.id)));
   revalidatePath("/medications");
-  return undefined;
+  return { ok: true };
 }
 
 export async function deleteMedication(formData: FormData): Promise<void> {

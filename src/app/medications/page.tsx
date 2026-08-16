@@ -1,7 +1,7 @@
 import { requireUser } from "@/lib/dal";
 import { getMedications } from "@/lib/medications-queries";
 import { AppShell } from "@/components/app-shell";
-import { MedicationForm } from "@/components/medication-form";
+import { MedicationAdd } from "@/components/medication-add";
 import { MedicationItem } from "@/components/medication-item";
 
 export default async function MedicationsPage() {
@@ -10,20 +10,16 @@ export default async function MedicationsPage() {
 
   return (
     <AppShell active="medications" userName={user.displayName}>
-      <h1 className="text-2xl font-semibold">Medikamente</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Medikamente</h1>
+        <MedicationAdd />
+      </div>
       <p className="mt-1 text-sm text-black/60 dark:text-white/60">
         Lege Medikamente mit Erinnerungszeiten an. Aktiviere dazu Push-Benachrichtigungen
         unter „Einstellungen“ – der Hintergrund-Worker schickt die Erinnerungen.
       </p>
 
-      <section className="surface-card mt-6 p-5">
-        <h2 className="text-lg font-medium">Neues Medikament</h2>
-        <div className="mt-3">
-          <MedicationForm />
-        </div>
-      </section>
-
-      <section className="mt-8">
+      <section className="mt-6">
         <h2 className="text-lg font-medium">Deine Medikamente</h2>
         {meds.length === 0 ? (
           <p className="mt-2 text-sm text-black/60 dark:text-white/60">

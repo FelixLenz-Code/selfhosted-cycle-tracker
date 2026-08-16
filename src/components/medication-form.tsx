@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import {
   addMedication,
   updateMedication,
@@ -37,14 +37,17 @@ export function MedicationForm({
     medication?.scheduleType ?? "fixed_time",
   );
 
+  // Nur bei Erfolg schließen – sonst ginge die Fehlermeldung verloren.
+  const doneRef = useRef(onDone);
+  useEffect(() => {
+    doneRef.current = onDone;
+  });
+  useEffect(() => {
+    if (state?.ok) doneRef.current?.();
+  }, [state]);
+
   return (
-    <form
-      action={async (fd) => {
-        await action(fd);
-        onDone?.();
-      }}
-      className="flex flex-col gap-3"
-    >
+    <form action={action} className="flex flex-col gap-3">
       {isEdit && <input type="hidden" name="id" value={medication!.id} />}
 
       <div className="flex flex-wrap gap-3">
