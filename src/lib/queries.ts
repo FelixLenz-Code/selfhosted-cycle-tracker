@@ -1,9 +1,15 @@
 import "server-only";
 import { and, eq, desc, gte, lte } from "drizzle-orm";
 import { db } from "@/db";
-import { periodEntries, cycleSettings, sexEntries } from "@/db/schema";
+import {
+  periodEntries,
+  cycleSettings,
+  sexEntries,
+  sexParticipants,
+  users,
+} from "@/db/schema";
 import type { PeriodEntryLite, CycleSettingsLite, CycleMode } from "./cycle";
-import type { SexEntry, SexType } from "./sex";
+import type { SexEntry, SexType, OrgasmResult } from "./sex";
 
 export type CycleSettingsForm = {
   avgCycleLengthOverride: number | null;
@@ -88,31 +94,72 @@ export async function getCycleSettingsForm(ownerId: string): Promise<CycleSettin
 }
 
 // --- Sex-Einträge ---
+// Ein Eintrag hat je beteiligter Person eine Zeile in sex_participants; der
+// Left-Join liefert deshalb mehrere Zeilen pro Eintrag, die hier wieder zu
+// einem Objekt zusammengefasst werden.
 const sexColumns = {
   id: sexEntries.id,
   occurredOn: sexEntries.occurredOn,
   occurredTime: sexEntries.occurredTime,
-  type: sexEntries.type,
+  userId: sexParticipants.userId,
+  name: users.displayName,
+  type: sexParticipants.type,
+  orgasm: sexParticipants.orgasm,
+};
+
+type SexRow = {
+  id: string;
+  occurredOn: string;
+  occurredTime: string;
+  userId: string | null;
+  name: string | null;
+  type: SexType | null;
+  orgasm: OrgasmResult | null;
 };
 
 // Postgres liefert `time` als "HH:MM:SS" – für Anzeige und <input type="time">
 // wird auf "HH:MM" gekürzt.
-function toSexEntry(r: {
-  id: string;
-  occurredOn: string;
-  occurredTime: string;
-  type: SexType;
-}): SexEntry {
-  return { ...r, occurredTime: r.occurredTime.slice(0, 5) };
+function groupSexRows(rows: SexRow[]): SexEntry[] {
+  const entries: SexEntry[] = [];
+  const byId = new Map<string, SexEntry>();
+  for (const r of rows) {
+    let entry = byId.get(r.id);
+    if (!entry) {
+      entry = {
+        id: r.id,
+        occurredOn: r.occurredOn,
+        occurredTime: r.occurredTime.slice(0, 5),
+        participants: [],
+      };
+      byId.set(r.id, entry);
+      entries.push(entry);
+    }
+    if (r.userId && r.type) {
+      entry.participants.push({
+        userId: r.userId,
+        name: r.name ?? "Unbekannt",
+        type: r.type,
+        orgasm: r.orgasm ?? "none",
+      });
+    }
+  }
+  return entries;
 }
 
 export async function getSexEntries(ownerId: string): Promise<SexEntry[]> {
   const rows = await db
     .select(sexColumns)
     .from(sexEntries)
+    .leftJoin(sexParticipants, eq(sexParticipants.entryId, sexEntries.id))
+    .leftJoin(users, eq(users.id, sexParticipants.userId))
     .where(eq(sexEntries.ownerId, ownerId))
-    .orderBy(desc(sexEntries.occurredOn), desc(sexEntries.occurredTime));
-  return rows.map(toSexEntry);
+    .orderBy(
+      desc(sexEntries.occurredOn),
+      desc(sexEntries.occurredTime),
+      sexEntries.id,
+      users.displayName,
+    );
+  return groupSexRows(rows);
 }
 
 // Einträge eines Zeitraums (für die Kalender-Markierung), aufsteigend nach Zeit.
@@ -124,6 +171,8 @@ export async function getSexEntriesBetween(
   const rows = await db
     .select(sexColumns)
     .from(sexEntries)
+    .leftJoin(sexParticipants, eq(sexParticipants.entryId, sexEntries.id))
+    .leftJoin(users, eq(users.id, sexParticipants.userId))
     .where(
       and(
         eq(sexEntries.ownerId, ownerId),
@@ -131,6 +180,11 @@ export async function getSexEntriesBetween(
         lte(sexEntries.occurredOn, toIso),
       ),
     )
-    .orderBy(sexEntries.occurredOn, sexEntries.occurredTime);
-  return rows.map(toSexEntry);
+    .orderBy(
+      sexEntries.occurredOn,
+      sexEntries.occurredTime,
+      sexEntries.id,
+      users.displayName,
+    );
+  return groupSexRows(rows);
 }

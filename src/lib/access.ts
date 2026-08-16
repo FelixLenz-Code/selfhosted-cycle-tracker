@@ -95,6 +95,48 @@ export async function getLinkedOwners(
     );
 }
 
+export type ParticipantCandidate = {
+  id: string;
+  name: string;
+  isOwner: boolean;
+};
+
+// Personen, die bei einem Eintrag des Owners beteiligt sein können: der Owner
+// selbst plus alle Partner mit akzeptierter Verknüpfung (unabhängig davon, ob
+// sie schreiben dürfen – wer dabei war, ist unabhängig von Rechten).
+export async function getParticipantCandidates(
+  ownerId: string,
+): Promise<ParticipantCandidate[]> {
+  const [ownerRows, partnerRows] = await Promise.all([
+    db
+      .select({ id: users.id, name: users.displayName })
+      .from(users)
+      .where(eq(users.id, ownerId))
+      .limit(1),
+    db
+      .select({ id: users.id, name: users.displayName })
+      .from(partnerLinks)
+      .innerJoin(users, eq(users.id, partnerLinks.partnerId))
+      .where(
+        and(eq(partnerLinks.ownerId, ownerId), eq(partnerLinks.status, "accepted")),
+      ),
+  ]);
+
+  const seen = new Set<string>();
+  const out: ParticipantCandidate[] = [];
+  for (const r of ownerRows) {
+    seen.add(r.id);
+    out.push({ ...r, isOwner: true });
+  }
+  // Mehrfache Verknüpfungen zur selben Person nur einmal anbieten.
+  for (const r of [...partnerRows].sort((a, b) => a.name.localeCompare(b.name, "de"))) {
+    if (seen.has(r.id)) continue;
+    seen.add(r.id);
+    out.push({ ...r, isOwner: false });
+  }
+  return out;
+}
+
 export type OutgoingLink = {
   id: string;
   status: "pending" | "accepted" | "revoked";

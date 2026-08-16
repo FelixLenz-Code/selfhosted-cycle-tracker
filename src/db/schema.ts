@@ -9,6 +9,7 @@ import {
   time,
   jsonb,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 
 // --- Enums ---
@@ -29,6 +30,8 @@ export const medScheduleType = pgEnum("med_schedule_type", [
 ]);
 // Art des Sex-Eintrags: GV, Handarbeit, Vibrator/Toy
 export const sexType = pgEnum("sex_type", ["intercourse", "manual", "toy"]);
+// Orgasmus-Ergebnis je beteiligter Person
+export const orgasmResult = pgEnum("orgasm_result", ["none", "yes", "ruined"]);
 export const notificationStatus = pgEnum("notification_status", [
   "pending",
   "sent",
@@ -120,9 +123,10 @@ export const periodEntries = pgTable("period_entries", {
     .notNull(),
 });
 
-// --- Sex-Einträge (Tag + Uhrzeit + Art) ---
+// --- Sex-Einträge (Tag + Uhrzeit) ---
 // Wall-Clock-Werte: Datum und Uhrzeit werden genau so gespeichert, wie sie
 // eingetragen wurden (kein Zeitzonen-Umrechnen wie bei Zeitstempeln).
+// Art und Orgasmus hängen an den Beteiligten, nicht am Eintrag selbst.
 export const sexEntries = pgTable("sex_entries", {
   id: uuid("id").defaultRandom().primaryKey(),
   ownerId: uuid("owner_id")
@@ -130,7 +134,6 @@ export const sexEntries = pgTable("sex_entries", {
     .references(() => users.id, { onDelete: "cascade" }),
   occurredOn: date("occurred_on").notNull(),
   occurredTime: time("occurred_time").notNull(),
-  type: sexType("type").notNull(),
   createdBy: uuid("created_by")
     .notNull()
     .references(() => users.id),
@@ -138,6 +141,25 @@ export const sexEntries = pgTable("sex_entries", {
     .defaultNow()
     .notNull(),
 });
+
+// --- Beteiligte eines Sex-Eintrags (eine Zeile je anwesender Person) ---
+// Wer nicht dabei war, hat schlicht keine Zeile. Art und Orgasmus werden je
+// Person erfasst, weil sie sich zwischen den Beteiligten unterscheiden können.
+export const sexParticipants = pgTable(
+  "sex_participants",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    entryId: uuid("entry_id")
+      .notNull()
+      .references(() => sexEntries.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: sexType("type").notNull(),
+    orgasm: orgasmResult("orgasm").notNull().default("none"),
+  },
+  (t) => [unique("sex_participants_entry_user_unique").on(t.entryId, t.userId)],
+);
 
 // --- Zyklus-Einstellungen (pro Frau) ---
 export const cycleSettings = pgTable("cycle_settings", {

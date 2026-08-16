@@ -6,7 +6,7 @@ import {
   type CycleStats,
   type PeriodEntryLite,
 } from "@/lib/cycle";
-import { SEX_TYPES, sexTypeMeta, type SexEntry } from "@/lib/sex";
+import { SEX_TYPES, entrySexTypes, sexTypeMeta, type SexEntry } from "@/lib/sex";
 
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
@@ -92,6 +92,8 @@ export function CycleCalendar({
             : "";
           const isToday = cell.iso === today;
           const sexOfDay = sexByDay.get(cell.iso) ?? [];
+          // Ein Punkt je vorkommender Art – ein Eintrag kann mehrere haben.
+          const dots = sexOfDay.flatMap(entrySexTypes);
           const baseClass =
             kind === "none"
               ? "bg-black/[0.02] dark:bg-white/[0.04] hover:bg-black/[0.05] dark:hover:bg-white/[0.07]"
@@ -99,7 +101,10 @@ export function CycleCalendar({
           const title = [
             kind === "none" ? null : KIND_LABEL[kind],
             inGv ? gvLabel : null,
-            ...sexOfDay.map((e) => `${e.occurredTime} ${sexTypeMeta(e.type).label}`),
+            ...sexOfDay.map(
+              (e) =>
+                `${e.occurredTime} ${entrySexTypes(e).map((t) => sexTypeMeta(t).label).join("/")}`,
+            ),
           ]
             .filter(Boolean)
             .join(" · ");
@@ -121,16 +126,16 @@ export function CycleCalendar({
                 </span>
               )}
               <span className="mt-2 leading-none sm:mt-2.5">{cell.day}</span>
-              {sexOfDay.length > 0 && (
+              {dots.length > 0 && (
                 <span
                   aria-hidden
                   className="pointer-events-none absolute inset-x-0 bottom-1 flex items-center justify-center gap-0.5"
                 >
-                  {sexOfDay.slice(0, 3).map((e) => (
+                  {dots.slice(0, 3).map((t, di) => (
                     <span
-                      key={e.id}
+                      key={di}
                       className={`h-1.5 w-1.5 rounded-full ring-1 ring-white/70 dark:ring-black/40 ${
-                        sexTypeMeta(e.type).dotClass
+                        sexTypeMeta(t).dotClass
                       }`}
                     />
                   ))}

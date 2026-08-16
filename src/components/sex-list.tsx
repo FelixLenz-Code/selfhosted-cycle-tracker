@@ -1,18 +1,23 @@
 import { deleteSexEntry } from "@/app/actions/sex";
 import { ConfirmSubmit } from "./confirm-submit";
-import { SexEdit } from "./sex-edit";
+import { SexDialog } from "./sex-dialog";
+import { ParticipantChips } from "./sex-participants";
 import { formatGermanDateWithWeekday } from "@/lib/format";
-import { sexTypeMeta, type SexEntry } from "@/lib/sex";
+import type { SexEntry, SexPerson } from "@/lib/sex";
 
 export function SexList({
   entries,
   today,
+  nowTime,
   ownerId,
+  people,
   canEdit,
 }: {
   entries: SexEntry[]; // absteigend nach Tag/Uhrzeit
   today: string;
+  nowTime: string;
   ownerId: string;
+  people: SexPerson[];
   canEdit: boolean;
 }) {
   if (entries.length === 0) {
@@ -47,45 +52,43 @@ export function SexList({
           </div>
 
           <ul className="divide-y divide-black/5 dark:divide-white/10">
-            {day.items.map((e) => {
-              const meta = sexTypeMeta(e.type);
-              return (
-                <li
-                  key={e.id}
-                  className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.03]"
-                >
-                  <span className="w-12 shrink-0 text-sm font-medium tabular-nums">
-                    {e.occurredTime}
-                  </span>
-                  <span
-                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${meta.badgeClass}`}
-                  >
-                    <span
-                      aria-hidden
-                      className={`h-1.5 w-1.5 rounded-full ${meta.dotClass}`}
+            {day.items.map((e) => (
+              <li
+                key={e.id}
+                className="flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.03]"
+              >
+                <span className="w-12 shrink-0 pt-0.5 text-sm font-medium tabular-nums">
+                  {e.occurredTime}
+                </span>
+
+                <div className="flex-1">
+                  <ParticipantChips participants={e.participants} />
+                </div>
+
+                {canEdit && (
+                  <div className="flex shrink-0 items-center gap-1">
+                    <SexDialog
+                      ownerId={ownerId}
+                      today={today}
+                      nowTime={nowTime}
+                      people={people}
+                      entry={e}
+                      label="Bearbeiten"
+                      buttonClassName="rounded-md border border-black/15 px-2.5 py-1 text-xs font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
                     />
-                    {meta.label}
-                  </span>
-
-                  <span className="flex-1" />
-
-                  {canEdit && (
-                    <div className="flex shrink-0 items-center gap-1">
-                      <SexEdit entry={e} ownerId={ownerId} today={today} />
-                      <ConfirmSubmit
-                        action={deleteSexEntry}
-                        hidden={{ id: e.id, ownerId }}
-                        label="✕"
-                        confirmLabel="Wirklich löschen?"
-                        idleAriaLabel="Eintrag löschen"
-                        idleClassName="rounded-md px-2 py-1 text-xs text-black/40 hover:bg-red-500/10 hover:text-red-600 dark:text-white/40"
-                        confirmClassName="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
-                      />
-                    </div>
-                  )}
-                </li>
-              );
-            })}
+                    <ConfirmSubmit
+                      action={deleteSexEntry}
+                      hidden={{ id: e.id, ownerId }}
+                      label="✕"
+                      confirmLabel="Wirklich löschen?"
+                      idleAriaLabel="Eintrag löschen"
+                      idleClassName="rounded-md px-2 py-1 text-xs text-black/40 hover:bg-red-500/10 hover:text-red-600 dark:text-white/40"
+                      confirmClassName="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
+                    />
+                  </div>
+                )}
+              </li>
+            ))}
           </ul>
         </div>
       ))}

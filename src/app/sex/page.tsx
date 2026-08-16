@@ -1,13 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/dal";
-import { resolveOwnerAccess, getLinkedOwners } from "@/lib/access";
+import {
+  resolveOwnerAccess,
+  getLinkedOwners,
+  getParticipantCandidates,
+} from "@/lib/access";
 import { getSexEntries } from "@/lib/queries";
 import { todayISO } from "@/lib/cycle";
 import { currentTimeHHMM } from "@/lib/sex";
 import { AppShell } from "@/components/app-shell";
 import { OwnerSwitcher } from "@/components/owner-switcher";
-import { SexForm } from "@/components/sex-form";
+import { SexDialog } from "@/components/sex-dialog";
 import { SexList } from "@/components/sex-list";
 
 export default async function SexPage({
@@ -42,14 +46,29 @@ export default async function SexPage({
     );
   }
 
-  const entries = await getSexEntries(access.ownerId);
+  const [entries, people] = await Promise.all([
+    getSexEntries(access.ownerId),
+    getParticipantCandidates(access.ownerId),
+  ]);
   const today = todayISO();
+  const nowTime = currentTimeHHMM();
 
   return (
     <AppShell active="sex" userName={user.displayName}>
-      <h1 className="text-2xl font-semibold">
-        Sex{access.isSelf ? "" : ` – ${access.ownerName}`}
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">
+          Sex{access.isSelf ? "" : ` – ${access.ownerName}`}
+        </h1>
+        {access.canEdit && (
+          <SexDialog
+            ownerId={access.ownerId}
+            today={today}
+            nowTime={nowTime}
+            people={people}
+            label="＋ Eintragen"
+          />
+        )}
+      </div>
 
       <OwnerSwitcher
         basePath="/sex"
@@ -67,24 +86,15 @@ export default async function SexPage({
         </p>
       )}
 
-      {access.canEdit && (
-        <section className="surface-card mt-6 p-5">
-          <h2 className="text-lg font-semibold">Eintragen</h2>
-          <p className="mt-1 mb-4 text-sm text-black/60 dark:text-white/60">
-            Tag und Uhrzeit sind frei wählbar – vorbelegt ist der aktuelle
-            Zeitpunkt.
-          </p>
-          <SexForm today={today} nowTime={currentTimeHHMM()} ownerId={access.ownerId} />
-        </section>
-      )}
-
-      <section className="mt-8">
+      <section className="mt-6">
         <h2 className="text-lg font-semibold">Verlauf</h2>
         <div className="mt-2">
           <SexList
             entries={entries}
             today={today}
+            nowTime={nowTime}
             ownerId={access.ownerId}
+            people={people}
             canEdit={access.canEdit}
           />
         </div>

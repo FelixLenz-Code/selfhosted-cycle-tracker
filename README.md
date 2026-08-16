@@ -13,6 +13,8 @@ Medikamenten-Erinnerungen und Push-Benachrichtigungen.
   ihren Partner autorisieren (sehen und/oder eintragen).
 - Blutung Start/Ende eintragen, Verlauf, Kalender & Vorhersagen (Zykluslänge,
   nächste Periode, Eisprung-Schätzung, fruchtbares Fenster).
+- Sex-Einträge mit Tag, Uhrzeit und Beteiligten – je Person Art (GV, Handarbeit,
+  Vibrator) und Orgasmus (keiner / ja / ruiniert); im Kalender markiert.
 - Medikamenten-Erinnerungen (feste Uhrzeiten oder zyklusabhängig) als Push.
 - Konfigurierbares „GV-Fenster" (Modus Kinderwunsch oder Vermeidung) als Push.
 - Installierbare PWA mit Web-Push-Benachrichtigungen.
