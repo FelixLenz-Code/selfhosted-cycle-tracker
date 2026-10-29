@@ -38,7 +38,7 @@ export default async function DashboardPage({
             begleitest, freigibt, siehst du hier ihre Daten.
           </p>
           <Link href="/partners" className="btn-primary mt-4">
-            Zu „Partner"
+            Zu „Partner“
           </Link>
         </div>
       </AppShell>

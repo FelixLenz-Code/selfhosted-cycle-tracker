@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   subscribeUser,
   unsubscribeUser,
@@ -18,30 +18,35 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return out;
 }
 
+// Browser-Eigenschaften ändern sich zur Laufzeit nicht – kein Abo nötig.
+const noSubscribe = () => () => {};
+const useClientValue = (get: () => boolean) =>
+  useSyncExternalStore(noSubscribe, get, () => false);
+
 const btn =
   "rounded-md px-4 py-2 text-sm font-medium disabled:opacity-60";
 
 export function PushManager({ vapidPublicKey }: { vapidPublicKey: string }) {
-  const [isSupported, setIsSupported] = useState(false);
+  const isSupported = useClientValue(
+    () => "serviceWorker" in navigator && "PushManager" in window,
+  );
   const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
+  const isIOS = useClientValue(() => /iPad|iPhone|iPod/.test(navigator.userAgent));
+  const isStandalone = useClientValue(
+    () => window.matchMedia("(display-mode: standalone)").matches,
+  );
 
   useEffect(() => {
-    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent));
-    setIsStandalone(window.matchMedia("(display-mode: standalone)").matches);
-
-    if ("serviceWorker" in navigator && "PushManager" in window) {
-      setIsSupported(true);
+    if (isSupported) {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/", updateViaCache: "none" })
         .then((reg) => reg.pushManager.getSubscription())
         .then((sub) => setSubscribed(Boolean(sub)))
         .catch(() => {});
     }
-  }, []);
+  }, [isSupported]);
 
   async function subscribe() {
     setBusy(true);
@@ -110,7 +115,7 @@ export function PushManager({ vapidPublicKey }: { vapidPublicKey: string }) {
         Push-Benachrichtigungen werden in diesem Browser nicht unterstützt.
         {isIOS && !isStandalone && (
           <p className="mt-2">
-            Auf dem iPhone/iPad: Über das Teilen-Symbol „Zum Home-Bildschirm" wählen
+            Auf dem iPhone/iPad: Über das Teilen-Symbol „Zum Home-Bildschirm“ wählen
             und die App von dort öffnen – dann sind Benachrichtigungen verfügbar.
           </p>
         )}
@@ -144,7 +149,7 @@ export function PushManager({ vapidPublicKey }: { vapidPublicKey: string }) {
       {isIOS && !isStandalone && (
         <p className="text-xs text-black/50 dark:text-white/50">
           Hinweis iOS: Push funktioniert nur, wenn die App über „Zum Home-Bildschirm
-          hinzufügen" installiert und von dort geöffnet wird.
+          hinzufügen“ installiert und von dort geöffnet wird.
         </p>
       )}
     </div>
