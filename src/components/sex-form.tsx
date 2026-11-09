@@ -4,6 +4,7 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { addSexEntry, editSexEntry, type SexFormState } from "@/app/actions/sex";
 import {
   SEX_TYPES,
+  SEX_NOTE_MAX,
   ORGASM_RESULTS,
   type SexEntry,
   type SexPerson,
@@ -154,7 +155,7 @@ export function SexForm({
               <fieldset disabled={!on} className="mt-3 flex flex-col gap-3">
                 <div>
                   <span className={optionLabelClass}>Art</span>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                     {SEX_TYPES.map((t, i) => (
                       <div key={t.value}>
                         <input
@@ -208,6 +209,20 @@ export function SexForm({
           );
         })}
       </div>
+
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="font-medium">
+          Notiz{" "}
+          <span className="font-normal text-black/45 dark:text-white/45">(optional)</span>
+        </span>
+        <textarea
+          name="note"
+          rows={3}
+          maxLength={SEX_NOTE_MAX}
+          defaultValue={entry?.note ?? ""}
+          className={`${inputClass} resize-y`}
+        />
+      </label>
 
       {state?.error && <p className="text-sm text-red-500">{state.error}</p>}
 

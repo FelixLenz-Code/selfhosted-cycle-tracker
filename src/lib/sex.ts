@@ -1,7 +1,7 @@
 // Typen und Beschriftungen für Sex-Einträge. Bewusst frei von Server-Importen,
 // damit Formular (Client) und Liste/Kalender (Server) dieselben Labels nutzen.
 
-export type SexType = "intercourse" | "manual" | "toy";
+export type SexType = "intercourse" | "manual" | "toy" | "blowjob";
 export type OrgasmResult = "none" | "yes" | "ruined";
 
 // Eine beteiligte Person eines Eintrags. Art und Orgasmus gelten nur für sie.
@@ -16,8 +16,12 @@ export type SexEntry = {
   id: string;
   occurredOn: string; // "YYYY-MM-DD"
   occurredTime: string; // "HH:MM"
+  note: string | null;
   participants: SexParticipant[];
 };
+
+// Maximale Länge der optionalen Notiz.
+export const SEX_NOTE_MAX = 500;
 
 // Auswählbare Person im Formular (Owner + verknüpfte Partner).
 export type SexPerson = { id: string; name: string };
@@ -45,6 +49,12 @@ export const SEX_TYPES: {
     label: "Vibrator",
     badgeClass: "bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300",
     dotClass: "bg-fuchsia-600 dark:bg-fuchsia-300",
+  },
+  {
+    value: "blowjob",
+    label: "Blowjob",
+    badgeClass: "bg-rose-500/15 text-rose-700 dark:text-rose-300",
+    dotClass: "bg-rose-600 dark:bg-rose-300",
   },
 ];
 

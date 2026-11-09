@@ -2,6 +2,7 @@ import { deleteSexEntry } from "@/app/actions/sex";
 import { ConfirmSubmit } from "./confirm-submit";
 import { SexDialog } from "./sex-dialog";
 import { ParticipantChips } from "./sex-participants";
+import { SexEntryRow } from "./sex-entry-row";
 import { formatGermanDateWithWeekday } from "@/lib/format";
 import type { SexEntry, SexPerson } from "@/lib/sex";
 
@@ -53,8 +54,9 @@ export function SexList({
 
           <ul className="divide-y divide-black/5 dark:divide-white/10">
             {day.items.map((e) => (
-              <li
+              <SexEntryRow
                 key={e.id}
+                note={e.note}
                 className="px-4 py-3 transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.03]"
               >
                 {/* Schmale Displays: Uhrzeit und Aktionen als Kopfzeile, die
@@ -94,7 +96,7 @@ export function SexList({
                     <ParticipantChips participants={e.participants} />
                   </div>
                 </div>
-              </li>
+              </SexEntryRow>
             ))}
           </ul>
         </div>

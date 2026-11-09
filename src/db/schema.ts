@@ -28,8 +28,8 @@ export const medScheduleType = pgEnum("med_schedule_type", [
   "fixed_time",
   "cycle_relative",
 ]);
-// Art des Sex-Eintrags: GV, Handarbeit, Vibrator/Toy
-export const sexType = pgEnum("sex_type", ["intercourse", "manual", "toy"]);
+// Art des Sex-Eintrags: GV, Handarbeit, Vibrator/Toy, Blowjob
+export const sexType = pgEnum("sex_type", ["intercourse", "manual", "toy", "blowjob"]);
 // Orgasmus-Ergebnis je beteiligter Person
 export const orgasmResult = pgEnum("orgasm_result", ["none", "yes", "ruined"]);
 export const notificationStatus = pgEnum("notification_status", [
@@ -134,6 +134,8 @@ export const sexEntries = pgTable("sex_entries", {
     .references(() => users.id, { onDelete: "cascade" }),
   occurredOn: date("occurred_on").notNull(),
   occurredTime: time("occurred_time").notNull(),
+  // Optionale Freitext-Notiz zum Eintrag (null = keine).
+  note: text("note"),
   createdBy: uuid("created_by")
     .notNull()
     .references(() => users.id),

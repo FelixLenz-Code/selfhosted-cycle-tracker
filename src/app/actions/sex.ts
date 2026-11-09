@@ -9,7 +9,7 @@ import { requireUser } from "@/lib/dal";
 import { canEditOwner, getParticipantCandidates } from "@/lib/access";
 import { isUuid } from "@/lib/ids";
 import { todayISO, diffDays } from "@/lib/cycle";
-import { currentTimeHHMM, SEX_TYPE_VALUES, ORGASM_VALUES } from "@/lib/sex";
+import { currentTimeHHMM, SEX_TYPE_VALUES, ORGASM_VALUES, SEX_NOTE_MAX } from "@/lib/sex";
 
 export type SexFormState = { error?: string; ok?: boolean } | undefined;
 
@@ -23,6 +23,12 @@ const schema = z.object({
   occurredTime: z
     .string()
     .regex(/^([01]\d|2[0-3]):[0-5]\d$/, { error: "Uhrzeit muss HH:MM sein." }),
+  // Leere Notiz wird als null gespeichert.
+  note: z
+    .string()
+    .trim()
+    .max(SEX_NOTE_MAX, { error: `Die Notiz darf höchstens ${SEX_NOTE_MAX} Zeichen haben.` })
+    .transform((s) => s || null),
 });
 
 const participantSchema = z.object({
@@ -59,6 +65,7 @@ async function parseEntry(
   const parsed = schema.safeParse({
     occurredOn: formData.get("occurredOn"),
     occurredTime: String(formData.get("occurredTime") ?? "").slice(0, 5),
+    note: String(formData.get("note") ?? ""),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Ungültige Eingabe." };

@@ -101,6 +101,7 @@ const sexColumns = {
   id: sexEntries.id,
   occurredOn: sexEntries.occurredOn,
   occurredTime: sexEntries.occurredTime,
+  note: sexEntries.note,
   userId: sexParticipants.userId,
   name: users.displayName,
   type: sexParticipants.type,
@@ -111,6 +112,7 @@ type SexRow = {
   id: string;
   occurredOn: string;
   occurredTime: string;
+  note: string | null;
   userId: string | null;
   name: string | null;
   type: SexType | null;
@@ -129,6 +131,7 @@ function groupSexRows(rows: SexRow[]): SexEntry[] {
         id: r.id,
         occurredOn: r.occurredOn,
         occurredTime: r.occurredTime.slice(0, 5),
+        note: r.note,
         participants: [],
       };
       byId.set(r.id, entry);

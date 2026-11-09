@@ -14,6 +14,7 @@ import { formatGermanDateWithWeekday } from "@/lib/format";
 import { medicationsDueOn, type Medication } from "@/lib/medications";
 import { SEX_TYPES, entrySexTypes, sexTypeMeta, type SexEntry } from "@/lib/sex";
 import { ParticipantChips } from "./sex-participants";
+import { SexEntryRow } from "./sex-entry-row";
 
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
@@ -333,17 +334,16 @@ function DayDetails({
           ) : (
             <ul className="mt-2 flex flex-col gap-3">
               {sexOfDay.map((e) => (
-                <li
-                  key={e.id}
-                  className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3"
-                >
-                  <span className="text-sm font-medium tabular-nums sm:w-12 sm:shrink-0 sm:pt-0.5">
-                    {e.occurredTime}
-                  </span>
-                  <div className="min-w-0 sm:flex-1">
-                    <ParticipantChips participants={e.participants} />
+                <SexEntryRow key={e.id} note={e.note}>
+                  <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3">
+                    <span className="text-sm font-medium tabular-nums sm:w-12 sm:shrink-0 sm:pt-0.5">
+                      {e.occurredTime}
+                    </span>
+                    <div className="min-w-0 sm:flex-1">
+                      <ParticipantChips participants={e.participants} />
+                    </div>
                   </div>
-                </li>
+                </SexEntryRow>
               ))}
             </ul>
           )}
